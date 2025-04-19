@@ -22,6 +22,29 @@ connection.connect((err) => err && console.log(err));
  * WARM UP ROUTES *
  ******************/
 
+// New Routes for DB
+
+const user = async function(req, res) {
+  const userid = req.params.user_id
+
+    connection.query(`
+      SELECT *
+      FROM users
+      WHERE`, (err, data) => {
+        if (err){
+          console.log(err)
+          res.json({})
+        } else {
+          console.log(data.rows[0])
+          console.log(data.rows[1])
+          res.json(data.rows)
+        }
+      })
+
+
+}
+
+
 // Route 1: GET /author/:type
 const author = async function(req, res) {
   // TODO (TASK 1): replace the values of name and pennkey with your own
@@ -311,6 +334,7 @@ const search_songs = async function(req, res) {
 
 module.exports = {
   author,
+  user,
   random,
   song,
   album,
