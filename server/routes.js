@@ -30,7 +30,7 @@ const user = async function(req, res) {
     connection.query(`
       SELECT *
       FROM users
-      WHERE`, (err, data) => {
+      WHERE userid='${userid}'`, (err, data) => {
         if (err){
           console.log(err)
           res.json({})
@@ -45,24 +45,201 @@ const user = async function(req, res) {
 }
 
 
-// Route 1: GET /author/:type
-const author = async function(req, res) {
-  // TODO (TASK 1): replace the values of name and pennkey with your own
-  const name = 'Drew Buck';
-  const pennkey = 'drewbuck';
+const top_books = async function(req, res){
+  const page = req.query.page;
+  const pageSize = page ? page : 10;
+  
+  if (!page) {
+    connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+    FROM
+        books b
+    JOIN
+        ratings r ON b.Title = r.BookTitle
+    GROUP BY
+        b.Title, b.Description, b.image, b.previewLink, b.publisher,
+        b.publishedDate, b.infoLink, b.categories, b.ratingsCount
+    ORDER BY
+        AvgReviewScore DESC`, (err, data) => {
+      if (!data) {
+        console.log("No data here")
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+      
 
-  // checks the value of type in the request parameters
-  // note that parameters are required and are specified in server.js in the endpoint by a colon (e.g. /author/:type)
-  if (req.params.type === 'name') {
-    // res.json returns data back to the requester via an HTTP response
-    res.json({ data: name });
-  } else if (req.params.type === 'pennkey') {
-    res.json({data: pennkey});
-    // TODO (TASK 2): edit the else if condition to check if the request parameter is 'pennkey' and if so, send back a JSON response with the pennkey
+    })
+   
   } else {
-    res.status(400).json({});
-  }
+    const page_size = req.query.page_size ?? 10;
+    const start = (page - 1) * page_size;
+    
+     connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+     FROM
+         books b
+     JOIN
+         ratings r ON b.Title = r.BookTitle
+     GROUP BY
+         b.Title, b.Description, b.image, b.previewLink, b.publisher,
+         b.publishedDate, b.infoLink, b.categories, b.ratingsCount
+     ORDER BY
+         AvgReviewScore DESC
+      LIMIT ${page_size} OFFSET ${start}`, (err, data) => {
+    if (!data) {
+      console.log("No data here")
+    res.json({})    
+    } else {
+      res.json(data.rows)
+    }
+  })
 }
+}
+
+
+const search_books = async function(req, res){
+
+}
+
+const search_authors = async function (req, res){
+  res.json({});
+}
+const author = async function (req, res){
+  res.json({});
+}
+
+const authors = async function (req, res){
+  const Author_Name = req.params.authors
+
+  connection.query(`SELECT *
+                    FROM authors
+                    WHERE author_id='${Author_Name}'`, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows[0])
+      }
+
+  })
+}
+
+const author_average = async function (req, res){
+  connection.query(`
+  SELECT 
+  a.Author_ID,
+  a.Author_Name,
+  ROUND(AVG(rt.ReviewScore), 2) AS Average_Review_Score
+  FROM authors a
+  JOIN written_by wb ON a.Author_ID = wb.Author_ID
+  JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+  GROUP BY a.Author_ID, a.Author_Name
+  ORDER BY Average_Review_Score DESC;
+  `, (err, data) => {
+    if (err) {
+      console.log(err);
+      res.json({});
+    } else {
+      res.json(data.rows);   
+    }
+  });
+}
+
+const review_leaderboard = async function (req, res){
+  connection.query(`
+    SELECT 
+      u.UserID,
+      u.Name AS Reviewer_Name,
+      u.Email,
+      COUNT(*) AS Total_Reviews,
+      RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
+    FROM reviews r
+    JOIN users u ON r.UserID = u.UserID
+    GROUP BY u.UserID, u.Name, u.Email
+    ORDER BY Total_Reviews DESC;
+  `, (err, data) => {
+    if (err) {
+      console.log(err);
+      res.json({});
+    } else {
+      res.json(data.rows);   
+    }
+  });
+}
+
+const book_reviews = async function (req, res){
+  const book_title = req.params.book_title
+
+  connection.query(`
+    SELECT 
+      r.ReviewID,
+      r.ReviewText,
+      r.ReviewDate,
+      u.UserID,
+      u.Name AS Reviewer_Name,
+      u.Email,
+      rt.ReviewScore
+    FROM reviews r
+    JOIN users u ON r.UserID = u.UserID
+    LEFT JOIN ratings rt 
+      ON rt.BookTitle = r.BookTitle AND rt.UserID = r.UserID
+    WHERE r.BookTitle = '${book_title}'
+    ORDER BY r.ReviewDate DESC;
+    `, (err, data) => {
+
+      if (err) {
+        console.log(err)
+        res.json({});
+      } else if (!data){
+        console.log("No data here!")
+        res.json({});
+      } else {
+        res.json(data.rows);
+      }
+
+    })
+}
+
+const book = async function (req, res){
+  const bookTitle = req.params.book_title
+
+  connection.query(`SELECT *
+                    FROM books
+                    WHERE title='${bookTitle}'`, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows[0])
+      }
+
+  })
+}
+
+
+
+
+// Route 1: GET /author/:type
+// const author = async function(req, res) {
+//   // TODO (TASK 1): replace the values of name and pennkey with your own
+//   const name = 'Drew Buck';
+//   const pennkey = 'drewbuck';
+
+//   // checks the value of type in the request parameters
+//   // note that parameters are required and are specified in server.js in the endpoint by a colon (e.g. /author/:type)
+//   if (req.params.type === 'name') {
+//     // res.json returns data back to the requester via an HTTP response
+//     res.json({ data: name });
+//   } else if (req.params.type === 'pennkey') {
+//     res.json({data: pennkey});
+//     // TODO (TASK 2): edit the else if condition to check if the request parameter is 'pennkey' and if so, send back a JSON response with the pennkey
+//   } else {
+//     res.status(400).json({});
+//   }
+// }
 
 // Route 2: GET /random
 const random = async function(req, res) {
@@ -333,14 +510,14 @@ const search_songs = async function(req, res) {
 }
 
 module.exports = {
+  top_books,
+  book,
+  search_books,
+  search_authors,
   author,
-  user,
-  random,
-  song,
-  album,
-  albums,
-  album_songs,
-  top_songs,
-  top_albums,
-  search_songs,
+  authors,
+  author_average,
+  review_leaderboard,
+  book_reviews,
+  user
 }

@@ -8,7 +8,7 @@ app.use(cors({
   origin: '*',
 }));
 
-app.use('/', authRouter);
+// app.use('/', authRouter);
 // We use express to define our various API endpoints and
 // provide their handlers that we implemented in routes.js
 // app.get('/author/:type', routes.author);
@@ -48,11 +48,11 @@ app.get('/top_books', routes.top_books);
 //     AvgReviewScore DESC
 // LIMIT 10;
 
-app.get('/books/:book_id', routes.book);
+app.get('/books/:book_title', routes.book);
 
 // SELECT *
 // FROM books
-// WHERE book_id='${bookID}'
+// WHERE title='${booktitle}'
 
 // Complex
 app.get('/search_books', routes.search_books);
@@ -99,7 +99,7 @@ app.get('/users/:user_id', routes.user);
 
 
 // Complex
-app.get('/search_authors', route.author);
+app.get('/search_authors', routes.search_authors);
 
 // const search_authors = async function(req, res) {
 //   const name = req.query.name ?? '';
@@ -143,7 +143,7 @@ app.get('/search_authors', route.author);
 
 
 // Complex will also get all of authors books and list them could even put total number of author reviews
-app.get('/author/:author_id', routes.authors);
+app.get('/authors/:author_id', routes.author);
 
 // SELECT 
 //   a.Author_ID,
@@ -165,14 +165,14 @@ app.get('/author/:author_id', routes.authors);
 // ORDER BY b.Title, r.ReviewDate DESC;
 
 
-app.get('/authors', route.authors);
+app.get('/authors', routes.authors);
 
 // SELECT Author_ID, Author_Name
 // FROM authors
 // ORDER BY Author_Name ASC;
 
 
-app.get('/author/:author_id/average', routes.author_average);
+app.get('/authors/:author_id/average', routes.author_average);
 
 // SELECT 
 //   a.Author_ID,
@@ -185,7 +185,7 @@ app.get('/author/:author_id/average', routes.author_average);
 // ORDER BY Average_Review_Score DESC;
 
 
-app.get('/review_leaderboard', route.review_leaderboard);
+app.get('/review_leaderboard', routes.review_leaderboard);
 
 // SELECT 
 //   u.UserID,
@@ -200,7 +200,7 @@ app.get('/review_leaderboard', route.review_leaderboard);
 
 
 // Complex
-app.get('/books/:book_id/reviews', routes.book_reviews);
+app.get('/books/:book_title/reviews', routes.book_reviews);
 
 
 // SELECT 

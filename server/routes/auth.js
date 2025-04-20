@@ -4,9 +4,9 @@ var express = require('express');
 
 var router = express.Router();
 
-router.post('/login', passport.authenticate('local', {
-    successRedirect: 'http://localhost:3000',
-    failureRedirect: 'http://localhost:3000/login'
-}))
+// router.post('/login', passport.authenticate('local', {
+//     successRedirect: 'http://localhost:3000',
+//     failureRedirect: 'http://localhost:3000/login'
+// }))
 
 module.exports = router;
