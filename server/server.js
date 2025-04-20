@@ -58,36 +58,36 @@ app.get('/books/:book_title', routes.book);
 app.get('/search_books', routes.search_books);
 
 // const search_books = async function(req, res) {
-//   const title = req.query.title ?? '';
-//   const author = req.query.author ?? '';
-//   const review_low = req.query.review_low ?? 0;
-//   const review_high = req.query.review_high ?? 5;
-//   const published_after = req.query.published_after ?? '0000-01-01';
-//   const published_before = req.query.published_before ?? '9999-12-31';
+  const title = req.query.title ?? '';
+  const author = req.query.author ?? '';
+  const review_low = req.query.review_low ?? 0;
+  const review_high = req.query.review_high ?? 5;
+  const published_after = req.query.published_after ?? '0000-01-01';
+  const published_before = req.query.published_before ?? '9999-12-31';
 
-//   const query = `
-//     SELECT DISTINCT b.*, AVG(r.ReviewScore) AS AvgReviewScore
-//     FROM books b
-//     LEFT JOIN ratings r ON b.Title = r.BookTitle
-//     LEFT JOIN written_by wb ON b.Title = wb.Book_Title
-//     LEFT JOIN authors a ON wb.Author_ID = a.Author_ID
-//     WHERE b.Title ILIKE '%' || $1 || '%'
-//       AND a.Author_Name ILIKE '%' || $2 || '%'
-//       AND (b.publishedDate >= $3 AND b.publishedDate <= $4)
-//     GROUP BY b.Title
-//     HAVING AVG(r.ReviewScore) >= $5 AND AVG(r.ReviewScore) <= $6
-//     ORDER BY b.Title ASC;
-//   `;
+  const query = `
+    SELECT DISTINCT b.*, AVG(r.ReviewScore) AS AvgReviewScore
+    FROM books b
+    LEFT JOIN ratings r ON b.Title = r.BookTitle
+    LEFT JOIN written_by wb ON b.Title = wb.Book_Title
+    LEFT JOIN authors a ON wb.Author_ID = a.Author_ID
+    WHERE b.Title ILIKE '%' || $1 || '%'
+      AND a.Author_Name ILIKE '%' || $2 || '%'
+      AND (b.publishedDate >= $3 AND b.publishedDate <= $4)
+    GROUP BY b.Title
+    HAVING AVG(r.ReviewScore) >= $5 AND AVG(r.ReviewScore) <= $6
+    ORDER BY b.Title ASC;
+  `;
 
-//   const values = [title, author, published_after, published_before, review_low, review_high];
+  const values = [title, author, published_after, published_before, review_low, review_high];
 
-//   try {
-//     const { rows } = await connection.query(query, values);
-//     res.json(rows);
-//   } catch (err) {
-//     console.error('Error searching books:', err);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
+  try {
+    const { rows } = await connection.query(query, values);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error searching books:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 // };
 
 

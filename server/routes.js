@@ -97,22 +97,113 @@ const top_books = async function(req, res){
 
 
 const search_books = async function(req, res){
+  const title = req.query.title ?? '';
+  const author = req.query.author ?? '';
+  const review_low = req.query.review_low ?? 0;
+  const review_high = req.query.review_high ?? 5;
+  const published_after = req.query.published_after ?? '0000-01-01';
+  const published_before = req.query.published_before ?? '9999-12-31';
 
+  const query = `
+    SELECT DISTINCT b.*, AVG(r.ReviewScore) AS AvgReviewScore
+    FROM books b
+    LEFT JOIN ratings r ON b.Title = r.BookTitle
+    LEFT JOIN written_by wb ON b.Title = wb.Book_Title
+    LEFT JOIN authors a ON wb.Author_ID = a.Author_ID
+    WHERE b.Title ILIKE '%' || $1 || '%'
+      AND a.Author_Name ILIKE '%' || $2 || '%'
+      AND (b.publishedDate >= $3 AND b.publishedDate <= $4)
+    GROUP BY b.Title
+    HAVING AVG(r.ReviewScore) >= $5 AND AVG(r.ReviewScore) <= $6
+    ORDER BY b.Title ASC;
+  `;
+
+  const values = [title, author, published_after, published_before, review_low, review_high];
+
+  try {
+    const { rows } = await connection.query(query, values);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error searching books:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
 
 const search_authors = async function (req, res){
-  res.json({});
-}
+    const name = req.query.name ?? '';
+    const min_books = req.query.min_books ?? 0;
+    const max_books = req.query.max_books ?? 10000;
+    const min_reviews = req.query.min_reviews ?? 0;
+    const max_reviews = req.query.max_reviews ?? 1000000;
+    const min_rating = req.query.min_rating ?? 0.0;
+    const max_rating = req.query.max_rating ?? 5.0;
+    const title = req.query.title ?? '';
+
+    const query = `
+      SELECT 
+        a.Author_ID,
+        a.Author_Name,
+        COUNT(DISTINCT wb.Book_Title) AS book_count,
+        COUNT(DISTINCT rv.ReviewID) AS review_count,
+        AVG(rt.ReviewScore) AS avg_rating
+      FROM authors a
+      LEFT JOIN written_by wb ON a.Author_ID = wb.Author_ID
+      LEFT JOIN reviews rv ON wb.Book_Title = rv.BookTitle
+      LEFT JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+      WHERE a.Author_Name ILIKE '%' || '${name}' || '%'
+      GROUP BY a.Author_ID, a.Author_Name
+      HAVING 
+        COUNT(DISTINCT wb.Book_Title) BETWEEN '${min_books}' AND '${max_books}' AND
+        COUNT(DISTINCT rv.ReviewID) BETWEEN '${min_reviews}' AND '${max_reviews}' AND
+        AVG(rt.ReviewScore) BETWEEN '${min_rating}' AND '${max_rating}'
+      ORDER BY a.Author_Name ASC;
+    `;
+  
+  
+    try {
+      const { rows } = await connection.query(query);
+      res.json(rows);
+    } catch (err) {
+      console.error('Error searching authors:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
 const author = async function (req, res){
-  res.json({});
+  const authorid = req.params.author_id
+  connection.query(`SELECT 
+  a.Author_ID,
+  a.Author_Name,
+  b.Title AS Book_Title,
+  b.Description,
+  r.ReviewID,
+  r.ReviewText,
+  r.ReviewDate,
+  u.UserID,
+  u.Name AS Reviewer_Name,
+  COUNT(DISTINCT r.UserID) OVER (PARTITION BY a.Author_ID) AS Total_Reviewers
+  FROM authors a
+  JOIN written_by wb ON a.Author_ID = wb.Author_ID
+  JOIN books b ON wb.Book_Title = b.Title
+  LEFT JOIN reviews r ON b.Title = r.BookTitle
+  LEFT JOIN users u ON r.UserID = u.UserID
+  WHERE a.Author_ID = $1
+  ORDER BY b.Title, r.ReviewDate DESC;`, (data, err) => {
+  if (err) {
+    console.log(err);
+    res.json({})
+  } else if (!data){
+    res.json({})
+  } else {
+    res.json(data.rows)
+  }
+})
 }
 
 const authors = async function (req, res){
-  const Author_Name = req.params.authors
-
   connection.query(`SELECT *
                     FROM authors
-                    WHERE author_id='${Author_Name}'`, (err, data) => {
+                    ORDER BY author_name`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})
