@@ -30,7 +30,7 @@ const user = async function(req, res) {
     connection.query(`
       SELECT *
       FROM users
-      WHERE`, (err, data) => {
+      WHERE userid='${userid}'`, (err, data) => {
         if (err){
           console.log(err)
           res.json({})
@@ -45,24 +45,292 @@ const user = async function(req, res) {
 }
 
 
-// Route 1: GET /author/:type
-const author = async function(req, res) {
-  // TODO (TASK 1): replace the values of name and pennkey with your own
-  const name = 'Drew Buck';
-  const pennkey = 'drewbuck';
+const top_books = async function(req, res){
+  const page = req.query.page;
+  const pageSize = page ? page : 10;
+  
+  if (!page) {
+    connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+    FROM
+        books b
+    JOIN
+        ratings r ON b.Title = r.BookTitle
+    GROUP BY
+        b.Title, b.Description, b.image, b.previewLink, b.publisher,
+        b.publishedDate, b.infoLink, b.categories, b.ratingsCount
+    ORDER BY
+        AvgReviewScore DESC`, (err, data) => {
+      if (!data) {
+        console.log("No data here")
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+      
 
-  // checks the value of type in the request parameters
-  // note that parameters are required and are specified in server.js in the endpoint by a colon (e.g. /author/:type)
-  if (req.params.type === 'name') {
-    // res.json returns data back to the requester via an HTTP response
-    res.json({ data: name });
-  } else if (req.params.type === 'pennkey') {
-    res.json({data: pennkey});
-    // TODO (TASK 2): edit the else if condition to check if the request parameter is 'pennkey' and if so, send back a JSON response with the pennkey
+    })
+   
   } else {
-    res.status(400).json({});
+    const page_size = req.query.page_size ?? 10;
+    const start = (page - 1) * page_size;
+    
+     connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+     FROM
+         books b
+     JOIN
+         ratings r ON b.Title = r.BookTitle
+     GROUP BY
+         b.Title, b.Description, b.image, b.previewLink, b.publisher,
+         b.publishedDate, b.infoLink, b.categories, b.ratingsCount
+     ORDER BY
+         AvgReviewScore DESC
+      LIMIT ${page_size} OFFSET ${start}`, (err, data) => {
+    if (!data) {
+      console.log("No data here")
+    res.json({})    
+    } else {
+      res.json(data.rows)
+    }
+  })
+}
+}
+
+
+const search_books = async function(req, res){
+  const title = req.query.title ?? '';
+  const author = req.query.author ?? '';
+  const review_low = req.query.review_low ?? 0;
+  const review_high = req.query.review_high ?? 5;
+  const published_after = req.query.published_after ?? '0000-01-01';
+  const published_before = req.query.published_before ?? '9999-12-31';
+
+  const query = `
+    SELECT DISTINCT b.*, AVG(r.ReviewScore) AS AvgReviewScore
+    FROM books b
+    LEFT JOIN ratings r ON b.Title = r.BookTitle
+    LEFT JOIN written_by wb ON b.Title = wb.Book_Title
+    LEFT JOIN authors a ON wb.Author_ID = a.Author_ID
+    WHERE b.Title ILIKE '%' || $1 || '%'
+      AND a.Author_Name ILIKE '%' || $2 || '%'
+      AND (b.publishedDate >= $3 AND b.publishedDate <= $4)
+    GROUP BY b.Title
+    HAVING AVG(r.ReviewScore) >= $5 AND AVG(r.ReviewScore) <= $6
+    ORDER BY b.Title ASC;
+  `;
+
+  const values = [title, author, published_after, published_before, review_low, review_high];
+
+  try {
+    const { rows } = await connection.query(query, values);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error searching books:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+const search_authors = async function (req, res){
+    const name = req.query.name ?? '';
+    const min_books = req.query.min_books ?? 0;
+    const max_books = req.query.max_books ?? 10000;
+    const min_reviews = req.query.min_reviews ?? 0;
+    const max_reviews = req.query.max_reviews ?? 1000000;
+    const min_rating = req.query.min_rating ?? 0.0;
+    const max_rating = req.query.max_rating ?? 5.0;
+    const title = req.query.title ?? '';
+
+    const query = `
+      SELECT 
+        a.Author_ID,
+        a.Author_Name,
+        COUNT(DISTINCT wb.Book_Title) AS book_count,
+        COUNT(DISTINCT rv.ReviewID) AS review_count,
+        AVG(rt.ReviewScore) AS avg_rating
+      FROM authors a
+      LEFT JOIN written_by wb ON a.Author_ID = wb.Author_ID
+      LEFT JOIN reviews rv ON wb.Book_Title = rv.BookTitle
+      LEFT JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+      WHERE a.Author_Name ILIKE '%' || '${name}' || '%'
+      GROUP BY a.Author_ID, a.Author_Name
+      HAVING 
+        COUNT(DISTINCT wb.Book_Title) BETWEEN '${min_books}' AND '${max_books}' AND
+        COUNT(DISTINCT rv.ReviewID) BETWEEN '${min_reviews}' AND '${max_reviews}' AND
+        AVG(rt.ReviewScore) BETWEEN '${min_rating}' AND '${max_rating}'
+      ORDER BY a.Author_Name ASC;
+    `;
+  
+  
+    try {
+      const { rows } = await connection.query(query);
+      res.json(rows);
+    } catch (err) {
+      console.error('Error searching authors:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+const author = async function (req, res){
+  const authorid = req.params.author_id
+  connection.query(`SELECT 
+  a.Author_ID,
+  a.Author_Name,
+  b.Title AS Book_Title,
+  b.Description,
+  r.ReviewID,
+  r.ReviewText,
+  r.ReviewDate,
+  u.UserID,
+  u.Name AS Reviewer_Name,
+  COUNT(DISTINCT r.UserID) OVER (PARTITION BY a.Author_ID) AS Total_Reviewers
+  FROM authors a
+  JOIN written_by wb ON a.Author_ID = wb.Author_ID
+  JOIN books b ON wb.Book_Title = b.Title
+  LEFT JOIN reviews r ON b.Title = r.BookTitle
+  LEFT JOIN users u ON r.UserID = u.UserID
+  WHERE a.Author_ID = $1
+  ORDER BY b.Title, r.ReviewDate DESC;`, (data, err) => {
+  if (err) {
+    console.log(err);
+    res.json({})
+  } else if (!data){
+    res.json({})
+  } else {
+    res.json(data.rows)
+  }
+})
+}
+
+const authors = async function (req, res){
+  connection.query(`SELECT *
+                    FROM authors
+                    ORDER BY author_name`, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows[0])
+      }
+
+  })
+}
+
+const author_average = async function (req, res){
+  connection.query(`
+  SELECT 
+  a.Author_ID,
+  a.Author_Name,
+  ROUND(AVG(rt.ReviewScore), 2) AS Average_Review_Score
+  FROM authors a
+  JOIN written_by wb ON a.Author_ID = wb.Author_ID
+  JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+  GROUP BY a.Author_ID, a.Author_Name
+  ORDER BY Average_Review_Score DESC;
+  `, (err, data) => {
+    if (err) {
+      console.log(err);
+      res.json({});
+    } else {
+      res.json(data.rows);   
+    }
+  });
+}
+
+const review_leaderboard = async function (req, res){
+  connection.query(`
+    SELECT 
+      u.UserID,
+      u.Name AS Reviewer_Name,
+      u.Email,
+      COUNT(*) AS Total_Reviews,
+      RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
+    FROM reviews r
+    JOIN users u ON r.UserID = u.UserID
+    GROUP BY u.UserID, u.Name, u.Email
+    ORDER BY Total_Reviews DESC;
+  `, (err, data) => {
+    if (err) {
+      console.log(err);
+      res.json({});
+    } else {
+      res.json(data.rows);   
+    }
+  });
+}
+
+const book_reviews = async function (req, res){
+  const book_title = req.params.book_title
+
+  connection.query(`
+    SELECT 
+      r.ReviewID,
+      r.ReviewText,
+      r.ReviewDate,
+      u.UserID,
+      u.Name AS Reviewer_Name,
+      u.Email,
+      rt.ReviewScore
+    FROM reviews r
+    JOIN users u ON r.UserID = u.UserID
+    LEFT JOIN ratings rt 
+      ON rt.BookTitle = r.BookTitle AND rt.UserID = r.UserID
+    WHERE r.BookTitle = '${book_title}'
+    ORDER BY r.ReviewDate DESC;
+    `, (err, data) => {
+
+      if (err) {
+        console.log(err)
+        res.json({});
+      } else if (!data){
+        console.log("No data here!")
+        res.json({});
+      } else {
+        res.json(data.rows);
+      }
+
+    })
+}
+
+const book = async function (req, res){
+  const bookTitle = req.params.book_title
+
+  connection.query(`SELECT *
+                    FROM books
+                    WHERE title='${bookTitle}'`, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows[0])
+      }
+
+  })
+}
+
+
+
+
+// Route 1: GET /author/:type
+// const author = async function(req, res) {
+//   // TODO (TASK 1): replace the values of name and pennkey with your own
+//   const name = 'Drew Buck';
+//   const pennkey = 'drewbuck';
+
+//   // checks the value of type in the request parameters
+//   // note that parameters are required and are specified in server.js in the endpoint by a colon (e.g. /author/:type)
+//   if (req.params.type === 'name') {
+//     // res.json returns data back to the requester via an HTTP response
+//     res.json({ data: name });
+//   } else if (req.params.type === 'pennkey') {
+//     res.json({data: pennkey});
+//     // TODO (TASK 2): edit the else if condition to check if the request parameter is 'pennkey' and if so, send back a JSON response with the pennkey
+//   } else {
+//     res.status(400).json({});
+//   }
+// }
 
 // Route 2: GET /random
 const random = async function(req, res) {
@@ -333,14 +601,14 @@ const search_songs = async function(req, res) {
 }
 
 module.exports = {
+  top_books,
+  book,
+  search_books,
+  search_authors,
   author,
-  user,
-  random,
-  song,
-  album,
-  albums,
-  album_songs,
-  top_songs,
-  top_albums,
-  search_songs,
+  authors,
+  author_average,
+  review_leaderboard,
+  book_reviews,
+  user
 }
