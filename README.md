@@ -4,3 +4,10 @@ This site will be a site that houses tens of thousands of books and their subseq
 
 
 Update for Milestone 3: In the directions for Milestone 3 it says to update our progress for the TA to see. In terms of progress all we have done so far is what was asked of us for Milestone 3 which was the queries, cleaning our data, putting this data into DataGrip as well as the tasks that were asked of us in the email sent to us regarding feedback for Milestone 2. We will soon start working on the Backend of the project as required for Milestone 4.
+
+To Run (temp):
+
+1) Clone the repo
+2) cd into server and run npm install
+3) cd into client and run npm install
+4) run npm start in each server and client on different terminals
