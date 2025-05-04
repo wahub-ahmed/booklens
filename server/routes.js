@@ -210,7 +210,7 @@ const authors = async function (req, res){
       } else if (!data){
         res.json({})
       } else {
-        res.json(data.rows[0])
+        res.json(data.rows)
       }
 
   })

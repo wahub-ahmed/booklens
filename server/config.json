@@ -1,9 +1,9 @@
 {
-  "rds_host": "homework-db.cluster-ro-ctlq74kqmuns.us-east-1.rds.amazonaws.com",
+  "rds_host": "database-1.cpd1k04qkuhg.us-east-1.rds.amazonaws.com",
   "rds_port": "5432",
-  "rds_user": "student",
-  "rds_password": "cis5500",
-  "rds_db": "swiftify",
+  "rds_user": "dbuck",
+  "rds_password": "3Eleven311#",
+  "rds_db": "books",
   "server_host": "localhost",
   "server_port": "8080"
 }
