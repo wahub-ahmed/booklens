@@ -20,7 +20,7 @@ export default function LazyTable({ route, columns, defaultPageSize, rowsPerPage
   useEffect(() => {
     fetch(`${route}?page=${page}&page_size=${pageSize}`)
       .then(res => res.json())
-      .then(resJson => setData(resJson));
+      .then(resJson => {setData(resJson)});
   }, [route, page, pageSize]);
 
   const handleChangePage = (e, newPage) => {
