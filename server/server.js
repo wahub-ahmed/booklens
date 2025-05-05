@@ -29,9 +29,7 @@ app.get('/books/:book_title', routes.book);
 // Complex
 app.get('/search_books', routes.search_books);
 
-
 app.get('/users/:user_id', routes.user);
-
 
 // Complex
 app.get('/search_authors', routes.search_authors);
@@ -39,12 +37,9 @@ app.get('/search_authors', routes.search_authors);
 // Complex will also get all of authors books and list them could even put total number of author reviews
 app.get('/authors/:author_id', routes.author);
 
-
 app.get('/authors', routes.authors);
 
-
 app.get('/authors/:author_id/average', routes.author_average);
-
 
 app.get('/review_leaderboard', routes.review_leaderboard);
 

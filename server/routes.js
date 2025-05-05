@@ -59,7 +59,9 @@ const top_books = async function(req, res){
         b.Title, b.Description, b.image, b.previewLink, b.publisher,
         b.publishedDate, b.infoLink, b.categories, b.ratingsCount
     ORDER BY
-        AvgReviewScore DESC`, (err, data) => {
+        AvgReviewScore DESC,
+        ratingsCount DESC
+        `, (err, data) => {
       if (!data) {
         console.log("No data here")
         res.json({})
@@ -83,7 +85,8 @@ const top_books = async function(req, res){
          b.Title, b.Description, b.image, b.previewLink, b.publisher,
          b.publishedDate, b.infoLink, b.categories, b.ratingsCount
      ORDER BY
-         AvgReviewScore DESC
+         AvgReviewScore DESC,
+         ratingsCount DESC
       LIMIT ${page_size} OFFSET ${start}`, (err, data) => {
     if (!data) {
       console.log("No data here")
