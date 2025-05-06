@@ -10,6 +10,15 @@ const reviewerColumns = [
     {
       field: 'reviewer_name',
       headerName: 'Reviewer Name',
+      renderCell: (params) => (
+        <Link
+          component={NavLink}
+          to={`/loggedin/users/${params.row.userid}`}
+          style={{ textDecoration: 'none' }}
+        >
+          {params.row.reviewer_name}
+        </Link>
+      ),
     },
     {
       field: 'email',
