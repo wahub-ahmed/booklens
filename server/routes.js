@@ -98,6 +98,101 @@ const top_books = async function(req, res){
 }
 }
 
+const top_authors = async function(req, res){
+  const page = req.query.page;
+  const pageSize = page ? page : 10;
+
+  if (!page) {
+    connection.query(`
+      WITH author_avg_scores AS (
+        SELECT
+            wb.Author_ID,
+            a.Author_Name,
+            AVG(r.ReviewScore) AS avg_score,
+            COUNT(DISTINCT wb.Book_Title) AS book_count,
+            COUNT(r.ReviewScore) AS total_ratings
+        FROM
+            written_by wb
+            JOIN authors a ON wb.Author_ID = a.Author_ID
+            JOIN ratings r ON wb.Book_Title = r.BookTitle
+        GROUP BY
+            wb.Author_ID, a.Author_Name
+      ),
+      max_score AS (
+        SELECT MAX(avg_score) AS top_avg_score
+        FROM author_avg_scores
+      )
+      SELECT
+          a.Author_ID,
+          a.Author_Name,
+          a.avg_score,
+          a.book_count,
+          a.total_ratings
+      FROM
+          author_avg_scores a
+          JOIN max_score m ON a.avg_score = m.top_avg_score
+      ORDER BY
+        a.total_ratings DESC,
+        a.book_count DESC,
+        a.avg_score DESC
+    `, (err, data) => {
+      if (!data) {
+        console.log("No data here")
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+    });
+
+  } else {
+    const page_size = req.query.page_size ?? 10;
+    const start = (page - 1) * page_size;
+
+    connection.query(`
+      WITH author_avg_scores AS (
+        SELECT
+            wb.Author_ID,
+            a.Author_Name,
+            AVG(r.ReviewScore) AS avg_score,
+            COUNT(DISTINCT wb.Book_Title) AS book_count,
+            COUNT(r.ReviewScore) AS total_ratings
+        FROM
+            written_by wb
+            JOIN authors a ON wb.Author_ID = a.Author_ID
+            JOIN ratings r ON wb.Book_Title = r.BookTitle
+        GROUP BY
+            wb.Author_ID, a.Author_Name
+      ),
+      max_score AS (
+        SELECT MAX(avg_score) AS top_avg_score
+        FROM author_avg_scores
+      )
+      SELECT
+          a.Author_ID,
+          a.Author_Name,
+          a.avg_score,
+          a.book_count,
+          a.total_ratings
+      FROM
+          author_avg_scores a
+          JOIN max_score m ON a.avg_score = m.top_avg_score
+      ORDER BY
+          a.total_ratings DESC,
+          a.book_count DESC,
+          a.avg_score DESC
+      LIMIT ${page_size} OFFSET ${start}
+    `, (err, data) => {
+      if (!data) {
+        console.log("No data here")
+        res.json({})    
+      } else {
+        res.json(data.rows)
+      }
+    });
+  }
+}
+
+
 
 const search_books = async function(req, res){
   const title = req.query.title ?? '';
@@ -240,27 +335,59 @@ const author_average = async function (req, res){
   });
 }
 
-const review_leaderboard = async function (req, res){
-  connection.query(`
-    SELECT 
-      u.UserID,
-      u.Name AS Reviewer_Name,
-      u.Email,
-      COUNT(*) AS Total_Reviews,
-      RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
-    FROM reviews r
-    JOIN users u ON r.UserID = u.UserID
-    GROUP BY u.UserID, u.Name, u.Email
-    ORDER BY Total_Reviews DESC;
-  `, (err, data) => {
-    if (err) {
-      console.log(err);
-      res.json({});
-    } else {
-      res.json(data.rows);   
-    }
-  });
-}
+const review_leaderboard = async function (req, res) {
+  const page = req.query.page;
+  const pageSize = req.query.page_size ?? 10;
+
+  if (!page) {
+    connection.query(`
+      SELECT 
+        u.UserID,
+        u.Name AS Reviewer_Name,
+        u.Email,
+        COUNT(*) AS Total_Reviews,
+        RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
+      FROM reviews r
+      JOIN users u ON r.UserID = u.UserID
+      GROUP BY u.UserID, u.Name, u.Email
+      ORDER BY Total_Reviews DESC
+    `, (err, data) => {
+      if (err || !data) {
+        console.log("Error or no data");
+        return res.status(500).json({ error: "Database error or no data" });
+      } else {
+        return res.json(data.rows);
+      }
+    });
+  } else {
+    const start = (page - 1) * pageSize;
+
+    connection.query(`
+      SELECT * FROM (
+        SELECT 
+          u.UserID,
+          u.Name AS Reviewer_Name,
+          u.Email,
+          COUNT(*) AS Total_Reviews,
+          RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
+        FROM reviews r
+        JOIN users u ON r.UserID = u.UserID
+        GROUP BY u.UserID, u.Name, u.Email
+      ) AS ranked_reviewers
+      ORDER BY Total_Reviews DESC
+      LIMIT ${pageSize} OFFSET ${start}
+    `, (err, data) => {
+      if (err || !data) {
+        console.log("Error or no data");
+        return res.status(500).json({ error: "Database error or no data" });
+      } else {
+        return res.json(data.rows);
+      }
+    });
+  }
+};
+
+
 
 const book_reviews = async function (req, res){
   const book_title = req.params.book_title
@@ -605,6 +732,7 @@ const search_songs = async function(req, res) {
 
 module.exports = {
   top_books,
+  top_authors,
   book,
   search_books,
   search_authors,

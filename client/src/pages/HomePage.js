@@ -39,6 +39,26 @@ export default function HomePage() {
     },
   ];
 
+  const authorColumns = [
+    {
+      field: 'author_name',
+      headerName: 'Author',
+      // renderCell: (row) => <Link onClick={() => setSelectedSongId(row.song_id)}>{row.title}</Link> // A Link component is used just for formatting purposes
+    },
+    {
+      field: 'total_ratings',
+      headerName: '# of Ratings', // A NavLink component is used to create a link to the album page
+    },
+    {
+      field: 'book_count',
+      headerName: 'Books Written'
+    },
+    {
+      field: 'avg_score',
+      headerName: 'Average Score'
+    },
+  ];
+
 
   const albumColumns = [
     {
@@ -63,6 +83,12 @@ export default function HomePage() {
       <h2>Top Books</h2>
       
       <LazyTable route={`http://${config.server_host}:${config.server_port}/top_books`} columns={bookColumns} />
+      <Divider />
+
+      <Divider />
+      <h2>Top Authors</h2>
+      
+      <LazyTable route={`http://${config.server_host}:${config.server_port}/top_authors`} columns={authorColumns} />
       <Divider />
       {/* TODO (TASK 16): add a h2 heading, LazyTable, and divider for top albums. Set the LazyTable's props for defaultPageSize to 5 and rowsPerPageOptions to [5, 10] */}
       {/* <h2>Top Albums</h2>

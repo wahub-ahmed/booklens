@@ -24,6 +24,8 @@ app.use('/', authRouter);
 
 app.get('/top_books', routes.top_books);
 
+app.get('/top_authors', routes.top_authors);
+
 app.get('/books/:book_title', routes.book);
 
 // Complex

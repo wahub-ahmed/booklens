@@ -5,6 +5,7 @@ import { createTheme } from "@mui/material/styles";
 import HomePage from "./pages/HomePage";
 import BooksPage from "./pages/BooksPage";
 import AlbumsPage from "./pages/AlbumsPage";
+import UsersPage from "./pages/UsersPage";
 import LoginPage from "./pages/LoginPage";
 import NavBar from './components/NavBar';
 import StartPage from "./pages/StartPage";
@@ -29,11 +30,12 @@ export default function App() {
       <CssBaseline />
       <BrowserRouter>
         <Routes>
-          {/* <Route path="/" element={<StartPage/>}/> */}
+          <Route path="/" element={<StartPage/>}/>
           <Route path="/loggedin" element={<WholeApp/>}>
             <Route path="home" element={<HomePage/>} />
             <Route path="books" element={<BooksPage/>} /> 
-            <Route path="authors" element={<AlbumsPage/>} />         
+            <Route path="authors" element={<AlbumsPage/>} /> 
+            <Route path="users" element={<UsersPage/>} />        
           </Route>
         </Routes>
       </BrowserRouter>
