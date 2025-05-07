@@ -1,6 +1,6 @@
-import { useParams } from "react-router-dom"
-import { useEffect, useState } from "react";
-
+import { useParams, NavLink } from "react-router-dom"
+import { useEffect, useState} from "react";
+import LazyTable from "../components/LazyTable";
 
 const config = require('../config.json');
 const BookInfoPage = () => {
@@ -22,13 +22,25 @@ const BookInfoPage = () => {
     getData();
 })
 
-    return (
-        <div>
-            <h1>Book Title: {bookData ? bookData.title : ""}</h1>
-            <img src={bookData.image}/>
+const reviewColumns = [
+    {
+      field: 'reviewer_name',
+      headerName: 'Reviewer',
+    //   renderCell: (row) => <NavLink to={`/albums/${row.album_id}`}>{row.title}</NavLink>
 
+    },
+    {
+      field: 'reviewtext',
+      headerName: 'Review'
+    }
+  ]
+    return (
+        <div style={{display: "flex", alignItems: 'center', flexDirection: "column"}}>
+            <h2>Book Title: {bookData ? bookData.title : ""}</h2>
+            <img src={bookData.image}/>
             <div>
                 <h2>Reviews</h2>
+                <LazyTable route={`http://${config.server_host}:${config.server_port}/books/${bookId}/reviews`} columns={reviewColumns} />
             </div>
         </div>
        

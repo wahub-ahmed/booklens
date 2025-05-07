@@ -389,26 +389,42 @@ const review_leaderboard = async function (req, res) {
 };
 
 
-
 const book_reviews = async function (req, res){
-  const book_title = req.params.book_title
-
-  connection.query(`
-    SELECT 
+  const book_id = req.params.book_id
+  const new_query = `WITH selected_book AS (SELECT * FROM books
+                                  WHERE book_id='${book_id}')
+SELECT
       r.ReviewID,
       r.ReviewText,
       r.ReviewDate,
       u.UserID,
       u.Name AS Reviewer_Name,
       u.Email,
-      rt.ReviewScore
-    FROM reviews r
+      rt.ReviewScore,
+      selected_book.title
+    FROM selected_book JOIN reviews r ON selected_book.title=r.booktitle
     JOIN users u ON r.UserID = u.UserID
-    LEFT JOIN ratings rt 
+    LEFT JOIN ratings rt
       ON rt.BookTitle = r.BookTitle AND rt.UserID = r.UserID
-    WHERE r.BookTitle = '${book_title}'
-    ORDER BY r.ReviewDate DESC;
-    `, (err, data) => {
+    ORDER BY r.ReviewDate DESC;`
+
+    // const oldQuery = `
+    // SELECT 
+    //   r.ReviewID,
+    //   r.ReviewText,
+    //   r.ReviewDate,
+    //   u.UserID,
+    //   u.Name AS Reviewer_Name,
+    //   u.Email,
+    //   rt.ReviewScore
+    // FROM reviews r
+    // JOIN users u ON r.UserID = u.UserID
+    // LEFT JOIN ratings rt 
+    //   ON rt.BookTitle = r.BookTitle AND rt.UserID = r.UserID
+    // WHERE r.BookTitle = '${book_title}'
+    // ORDER BY r.ReviewDate DESC;
+    // `
+  connection.query(new_query, (err, data) => {
 
       if (err) {
         console.log(err)
