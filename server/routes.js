@@ -71,6 +71,7 @@ const top_books = async function(req, res){
     ORDER BY
         AvgReviewScore DESC,
         ratingsCount DESC
+    LIMIT 1000
         `, (err, data) => {
       if (!data) {
         console.log("No data here")
