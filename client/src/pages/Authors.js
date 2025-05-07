@@ -33,10 +33,6 @@ function Authors() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchAuthors();
-  }, []);
-
   return (
     <Container sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>

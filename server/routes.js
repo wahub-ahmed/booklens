@@ -285,6 +285,7 @@ const search_authors = async function (req, res){
     SELECT 
       a.Author_ID,
       a.Author_Name,
+      b.Book_ID,
       b.Title AS Book_Title,
       b.Description,
       r.ReviewID,
