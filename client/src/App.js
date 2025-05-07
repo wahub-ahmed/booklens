@@ -3,12 +3,18 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import { indigo, amber } from '@mui/material/colors'
 import { createTheme } from "@mui/material/styles";
 import HomePage from "./pages/HomePage";
+import BooksPage from "./pages/BooksPage";
+import AlbumsPage from "./pages/AlbumsPage";
+import UsersPage from "./pages/UsersPage";
+import User from "./pages/User";
 import LoginPage from "./pages/LoginPage";
 import NavBar from './components/NavBar';
 import StartPage from "./pages/StartPage";
+import BookInfoPage from "./pages/BookInfoPage";
 import WholeApp from "./WholeApp";
 import Authors from './pages/Authors';
 import AuthorPage from './pages/AuthorPage';
+
 // createTheme enables you to customize the look and feel of your app past the default
 // in this case, we only change the color scheme
 export const theme = createTheme({
@@ -30,7 +36,12 @@ export default function App() {
         <Routes>
           <Route path="/" element={<StartPage/>}/>
           <Route path="/loggedin" element={<WholeApp/>}>
-            <Route path="home" element={<HomePage />} />
+            <Route path="" element={<HomePage/>} />
+            <Route path="books" element={<BooksPage/>} /> 
+            <Route path="books/:bookId" element={<BookInfoPage/>}/>
+            <Route path="authors" element={<AlbumsPage/>} /> 
+            <Route path="users" element={<UsersPage/>} /> 
+            <Route path="users/:user_id" element={<User/>} />    
           </Route>
           <Route path="/Authors" element={<Authors />} />
           <Route path="/authors/:author_id" element={<AuthorPage />} />
