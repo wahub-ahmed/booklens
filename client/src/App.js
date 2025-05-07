@@ -37,7 +37,7 @@ export default function App() {
             <Route path="books" element={<BooksPage/>} /> 
             <Route path="authors" element={<AlbumsPage/>} /> 
             <Route path="users" element={<UsersPage/>} /> 
-            <Route path="users/:id" element={<User/>} />       
+            <Route path="users/:user_id" element={<User/>} />    
           </Route>
         </Routes>
       </BrowserRouter>

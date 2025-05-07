@@ -25,24 +25,34 @@ connection.connect((err) => err && console.log(err));
 // New Routes for DB
 
 const user = async function(req, res) {
-  const userid = req.params.user_id
+  const userid = req.params.user_id;
 
-    connection.query(`
-      SELECT *
-      FROM users
-      WHERE userid='${userid}'`, (err, data) => {
-        if (err){
-          console.log(err)
-          res.json({})
-        } else {
-          console.log(data.rows[0])
-          console.log(data.rows[1])
-          res.json(data.rows)
-        }
-      })
+  const query = `
+      SELECT 
+      u.name AS reviewer_name,
+      b.Title AS BookTitle,
+      a.Author_Name AS AuthorName,
+      r.ReviewText,
+      ra.ReviewScore
+    FROM reviews r
+    JOIN books b ON r.BookTitle = b.Title
+    LEFT JOIN written_by wb ON b.Title = wb.Book_Title
+    LEFT JOIN authors a ON wb.Author_ID = a.Author_ID
+    LEFT JOIN ratings ra ON r.BookTitle = ra.BookTitle AND r.UserID = ra.UserID
+    JOIN users u ON r.UserID = u.UserID
+    WHERE r.UserID = $1
+  `;
 
+  connection.query(query, [userid], (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    } else {
+      res.json(data.rows);
+    }
+  });
+};
 
-}
 
 
 const top_books = async function(req, res){
