@@ -55,7 +55,7 @@ export default function AuthorPage() {
             <Card variant="outlined" sx={{ borderRadius: 3, boxShadow: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  <NavLink to={`/books/${bookId}`} style={{ textDecoration: 'none', color: '#1976d2' }}>
+                  <NavLink to={`/loggedin/books/${bookId}`} style={{ textDecoration: 'none', color: '#1976d2' }}>
                     {title}
                   </NavLink>
                 </Typography>

@@ -39,12 +39,12 @@ export default function App() {
             <Route path="" element={<HomePage/>} />
             <Route path="books" element={<BooksPage/>} /> 
             <Route path="books/:bookId" element={<BookInfoPage/>}/>
-            <Route path="authors" element={<AlbumsPage/>} /> 
             <Route path="users" element={<UsersPage/>} /> 
-            <Route path="users/:user_id" element={<User/>} />    
+            <Route path="users/:user_id" element={<User/>} />  
+            <Route path="authors" element={<Authors />} />
+            <Route path="authors/:author_id" element={<AuthorPage />} />  
           </Route>
-          <Route path="/Authors" element={<Authors />} />
-          <Route path="/authors/:author_id" element={<AuthorPage />} />
+          
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

@@ -313,11 +313,11 @@ const search_authors = async function (req, res){
     try {
       const { rows } = await connection.query(query, [authorid]);
       if (!rows || rows.length === 0) {
-        return res.status(404).json([]);
+        res.status(404).json([]);
       }
-      return res.json(rows);
+      es.json(rows);
     } catch (err) {
-      return res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error' });
     }
   };
   
