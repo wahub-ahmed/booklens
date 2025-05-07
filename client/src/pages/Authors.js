@@ -26,6 +26,7 @@ function Authors() {
       });
       const res = await fetch(`http://localhost:8080/search_authors?${params.toString()}`);
       const data = await res.json();
+      //console.log(data)
       setAuthors(data);
     } catch (err) {
       console.error('Error fetching authors:', err);
@@ -111,7 +112,7 @@ function Authors() {
               <Card variant="outlined" sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
-                  <NavLink to={`/authors/${author.author_id}`}>
+                  <NavLink to={`/loggedin/authors/${author.author_id}`}>
   {author.author_name}
 </NavLink>
                   </Typography>
