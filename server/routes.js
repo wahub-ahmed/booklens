@@ -169,36 +169,47 @@ const search_authors = async function (req, res){
     }
   };
 
-const author = async function (req, res){
-  const authorid = req.params.author_id
-  connection.query(`SELECT 
-  a.Author_ID,
-  a.Author_Name,
-  b.Title AS Book_Title,
-  b.Description,
-  r.ReviewID,
-  r.ReviewText,
-  r.ReviewDate,
-  u.UserID,
-  u.Name AS Reviewer_Name,
-  COUNT(DISTINCT r.UserID) OVER (PARTITION BY a.Author_ID) AS Total_Reviewers
-  FROM authors a
-  JOIN written_by wb ON a.Author_ID = wb.Author_ID
-  JOIN books b ON wb.Book_Title = b.Title
-  LEFT JOIN reviews r ON b.Title = r.BookTitle
-  LEFT JOIN users u ON r.UserID = u.UserID
-  WHERE a.Author_ID = $1
-  ORDER BY b.Title, r.ReviewDate DESC;`, (data, err) => {
-  if (err) {
-    console.log(err);
-    res.json({})
-  } else if (!data){
-    res.json({})
-  } else {
-    res.json(data.rows)
-  }
-})
-}
+  const author = async function (req, res) {
+    const authorid = req.params.author_id;
+    const query = `
+    SELECT 
+      a.Author_ID,
+      a.Author_Name,
+      b.Title AS Book_Title,
+      b.Description,
+      r.ReviewID,
+      r.ReviewText,
+      r.ReviewDate,
+      u.UserID,
+      u.Name AS Reviewer_Name,
+      sub.Total_Reviewers
+    FROM authors a
+    JOIN written_by wb ON a.Author_ID = wb.Author_ID
+    JOIN books b ON wb.Book_Title = b.Title
+    LEFT JOIN reviews r ON b.Title = r.BookTitle
+    LEFT JOIN users u ON r.UserID = u.UserID
+    LEFT JOIN (
+      SELECT a.Author_ID, COUNT(DISTINCT r.UserID) AS Total_Reviewers
+      FROM authors a
+      JOIN written_by wb ON a.Author_ID = wb.Author_ID
+      JOIN reviews r ON wb.Book_Title = r.BookTitle
+      GROUP BY a.Author_ID
+    ) sub ON sub.Author_ID = a.Author_ID
+    WHERE a.Author_ID = $1
+    ORDER BY b.Title, r.ReviewDate DESC;
+    `;
+  
+    try {
+      const { rows } = await connection.query(query, [authorid]);
+      if (!rows || rows.length === 0) {
+        return res.status(404).json([]);
+      }
+      return res.json(rows);
+    } catch (err) {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
 
 const authors = async function (req, res){
   connection.query(`SELECT *

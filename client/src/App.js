@@ -7,6 +7,8 @@ import LoginPage from "./pages/LoginPage";
 import NavBar from './components/NavBar';
 import StartPage from "./pages/StartPage";
 import WholeApp from "./WholeApp";
+import Authors from './pages/Authors';
+import AuthorPage from './pages/AuthorPage';
 // createTheme enables you to customize the look and feel of your app past the default
 // in this case, we only change the color scheme
 export const theme = createTheme({
@@ -29,11 +31,9 @@ export default function App() {
           <Route path="/" element={<StartPage/>}/>
           <Route path="/loggedin" element={<WholeApp/>}>
             <Route path="home" element={<HomePage />} />
-            {/* <Route path="/albums" element={<AlbumsPage />} />
-            <Route path="/albums/:album_id" element={<AlbumInfoPage />} />
-             <Route path="/songs" element={<SongsPage />} /> */}
-            {/* <Route path="/login" element={<LoginPage />} /> */}
           </Route>
+          <Route path="/Authors" element={<Authors />} />
+          <Route path="/authors/:author_id" element={<AuthorPage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

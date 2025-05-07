@@ -36,7 +36,7 @@ export default function NavBar() {
     <AppBar position='static'>
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
-          <NavText href='/' text='Book Lens' isMain />
+          <NavText href='/' text='Book🔎Lens' isMain />
         </Toolbar>
       </Container>
     </AppBar>
