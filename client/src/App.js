@@ -6,6 +6,7 @@ import HomePage from "./pages/HomePage";
 import BooksPage from "./pages/BooksPage";
 import AlbumsPage from "./pages/AlbumsPage";
 import UsersPage from "./pages/UsersPage";
+import User from "./pages/User";
 import LoginPage from "./pages/LoginPage";
 import NavBar from './components/NavBar';
 import StartPage from "./pages/StartPage";
@@ -37,7 +38,8 @@ export default function App() {
             <Route path="books" element={<BooksPage/>} /> 
             <Route path="books/:bookId" element={<BookInfoPage/>}/>
             <Route path="authors" element={<AlbumsPage/>} /> 
-            <Route path="users" element={<UsersPage/>} />        
+            <Route path="users" element={<UsersPage/>} /> 
+            <Route path="users/:user_id" element={<User/>} />    
           </Route>
         </Routes>
       </BrowserRouter>
