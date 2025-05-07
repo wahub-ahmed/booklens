@@ -443,7 +443,7 @@ const book = async function (req, res){
   const book_id = req.params.book_id
 
   connection.query(`SELECT *
-                    FROM books
+                    FROM books JOIN written_by w ON w.book_title=books.title JOIN authors a ON a.author_id=w.author_id
                     WHERE book_id='${book_id}'`, (err, data) => {
       if (err){
         console.log(err)
