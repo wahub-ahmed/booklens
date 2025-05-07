@@ -26,7 +26,7 @@ app.get('/top_books', routes.top_books);
 
 app.get('/top_authors', routes.top_authors);
 
-app.get('/books/:book_title', routes.book);
+app.get('/books/:book_id', routes.book);
 
 // Complex
 app.get('/search_books', routes.search_books);
@@ -46,7 +46,7 @@ app.get('/authors/:author_id/average', routes.author_average);
 app.get('/review_leaderboard', routes.review_leaderboard);
 
 // Complex will have to join tables
-app.get('/books/:book_title/reviews', routes.book_reviews);
+app.get('/books/:book_id/reviews', routes.book_reviews);
 
 
 

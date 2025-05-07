@@ -27,7 +27,7 @@ export default function HomePage() {
     {
       field: 'title',
       headerName: 'Book Title',
-      // renderCell: (row) => <Link onClick={() => setSelectedSongId(row.song_id)}>{row.title}</Link> // A Link component is used just for formatting purposes
+      renderCell: (row) => <NavLink to={`books/${row.book_id}`}>{row.title}</NavLink> // A Link component is used just for formatting purposes
     },
     {
       field: 'ratingscount',
@@ -36,7 +36,7 @@ export default function HomePage() {
     {
       field: 'avgreviewscore',
       headerName: 'Review Score'
-    },
+    }
   ];
 
   const authorColumns = [

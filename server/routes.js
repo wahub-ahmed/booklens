@@ -50,13 +50,13 @@ const top_books = async function(req, res){
   const pageSize = page ? page : 10;
   
   if (!page) {
-    connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+    connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
     FROM
         books b
     JOIN
         ratings r ON b.Title = r.BookTitle
     GROUP BY
-        b.Title, b.Description, b.image, b.previewLink, b.publisher,
+        b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher,
         b.publishedDate, b.infoLink, b.categories, b.ratingsCount
     ORDER BY
         AvgReviewScore DESC,
@@ -64,6 +64,7 @@ const top_books = async function(req, res){
         `, (err, data) => {
       if (!data) {
         console.log("No data here")
+        console.log(data)
         res.json({})
       } else {
         res.json(data.rows)
@@ -76,13 +77,13 @@ const top_books = async function(req, res){
     const page_size = req.query.page_size ?? 10;
     const start = (page - 1) * page_size;
     
-     connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+     connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
      FROM
          books b
      JOIN
          ratings r ON b.Title = r.BookTitle
      GROUP BY
-         b.Title, b.Description, b.image, b.previewLink, b.publisher,
+         b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher,
          b.publishedDate, b.infoLink, b.categories, b.ratingsCount
      ORDER BY
          AvgReviewScore DESC,
@@ -423,11 +424,11 @@ const book_reviews = async function (req, res){
 }
 
 const book = async function (req, res){
-  const bookTitle = req.params.book_title
+  const book_id = req.params.book_id
 
   connection.query(`SELECT *
                     FROM books
-                    WHERE title='${bookTitle}'`, (err, data) => {
+                    WHERE book_id='${book_id}'`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})

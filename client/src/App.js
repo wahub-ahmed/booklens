@@ -9,6 +9,7 @@ import UsersPage from "./pages/UsersPage";
 import LoginPage from "./pages/LoginPage";
 import NavBar from './components/NavBar';
 import StartPage from "./pages/StartPage";
+import BookInfoPage from "./pages/BookInfoPage";
 import WholeApp from "./WholeApp";
 
 // createTheme enables you to customize the look and feel of your app past the default
@@ -32,8 +33,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<StartPage/>}/>
           <Route path="/loggedin" element={<WholeApp/>}>
-            <Route path="home" element={<HomePage/>} />
+            <Route path="" element={<HomePage/>} />
             <Route path="books" element={<BooksPage/>} /> 
+            <Route path="books/:bookId" element={<BookInfoPage/>}/>
             <Route path="authors" element={<AlbumsPage/>} /> 
             <Route path="users" element={<UsersPage/>} />        
           </Route>
