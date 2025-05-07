@@ -36,9 +36,10 @@ export default function NavBar() {
     <AppBar position='static'>
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
-          <NavText href='/' text='Book Ratings' isMain />
-          <NavText href='/Books' text='Books' />
-          <NavText href='/Authors' text='Authors'/>
+          <NavText href='/loggedin' text='Book Ratings' isMain />
+          <NavText href='/loggedin/books' text='Books' />
+          <NavText href='/loggedin/authors' text='Authors'/>
+          <NavText href='/loggedin/users' text='Users'/>
         </Toolbar>
       </Container>
     </AppBar>

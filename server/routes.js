@@ -50,18 +50,21 @@ const top_books = async function(req, res){
   const pageSize = page ? page : 10;
   
   if (!page) {
-    connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+    connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
     FROM
         books b
     JOIN
         ratings r ON b.Title = r.BookTitle
     GROUP BY
-        b.Title, b.Description, b.image, b.previewLink, b.publisher,
+        b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher,
         b.publishedDate, b.infoLink, b.categories, b.ratingsCount
     ORDER BY
-        AvgReviewScore DESC`, (err, data) => {
+        AvgReviewScore DESC,
+        ratingsCount DESC
+        `, (err, data) => {
       if (!data) {
         console.log("No data here")
+        console.log(data)
         res.json({})
       } else {
         res.json(data.rows)
@@ -74,16 +77,17 @@ const top_books = async function(req, res){
     const page_size = req.query.page_size ?? 10;
     const start = (page - 1) * page_size;
     
-     connection.query(`SELECT b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+     connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
      FROM
          books b
      JOIN
          ratings r ON b.Title = r.BookTitle
      GROUP BY
-         b.Title, b.Description, b.image, b.previewLink, b.publisher,
+         b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher,
          b.publishedDate, b.infoLink, b.categories, b.ratingsCount
      ORDER BY
-         AvgReviewScore DESC
+         AvgReviewScore DESC,
+         ratingsCount DESC
       LIMIT ${page_size} OFFSET ${start}`, (err, data) => {
     if (!data) {
       console.log("No data here")
@@ -94,6 +98,101 @@ const top_books = async function(req, res){
   })
 }
 }
+
+const top_authors = async function(req, res){
+  const page = req.query.page;
+  const pageSize = page ? page : 10;
+
+  if (!page) {
+    connection.query(`
+      WITH author_avg_scores AS (
+        SELECT
+            wb.Author_ID,
+            a.Author_Name,
+            AVG(r.ReviewScore) AS avg_score,
+            COUNT(DISTINCT wb.Book_Title) AS book_count,
+            COUNT(r.ReviewScore) AS total_ratings
+        FROM
+            written_by wb
+            JOIN authors a ON wb.Author_ID = a.Author_ID
+            JOIN ratings r ON wb.Book_Title = r.BookTitle
+        GROUP BY
+            wb.Author_ID, a.Author_Name
+      ),
+      max_score AS (
+        SELECT MAX(avg_score) AS top_avg_score
+        FROM author_avg_scores
+      )
+      SELECT
+          a.Author_ID,
+          a.Author_Name,
+          a.avg_score,
+          a.book_count,
+          a.total_ratings
+      FROM
+          author_avg_scores a
+          JOIN max_score m ON a.avg_score = m.top_avg_score
+      ORDER BY
+        a.total_ratings DESC,
+        a.book_count DESC,
+        a.avg_score DESC
+    `, (err, data) => {
+      if (!data) {
+        console.log("No data here")
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+    });
+
+  } else {
+    const page_size = req.query.page_size ?? 10;
+    const start = (page - 1) * page_size;
+
+    connection.query(`
+      WITH author_avg_scores AS (
+        SELECT
+            wb.Author_ID,
+            a.Author_Name,
+            AVG(r.ReviewScore) AS avg_score,
+            COUNT(DISTINCT wb.Book_Title) AS book_count,
+            COUNT(r.ReviewScore) AS total_ratings
+        FROM
+            written_by wb
+            JOIN authors a ON wb.Author_ID = a.Author_ID
+            JOIN ratings r ON wb.Book_Title = r.BookTitle
+        GROUP BY
+            wb.Author_ID, a.Author_Name
+      ),
+      max_score AS (
+        SELECT MAX(avg_score) AS top_avg_score
+        FROM author_avg_scores
+      )
+      SELECT
+          a.Author_ID,
+          a.Author_Name,
+          a.avg_score,
+          a.book_count,
+          a.total_ratings
+      FROM
+          author_avg_scores a
+          JOIN max_score m ON a.avg_score = m.top_avg_score
+      ORDER BY
+          a.total_ratings DESC,
+          a.book_count DESC,
+          a.avg_score DESC
+      LIMIT ${page_size} OFFSET ${start}
+    `, (err, data) => {
+      if (!data) {
+        console.log("No data here")
+        res.json({})    
+      } else {
+        res.json(data.rows)
+      }
+    });
+  }
+}
+
 
 
 const search_books = async function(req, res){
@@ -237,47 +336,95 @@ const author_average = async function (req, res){
   });
 }
 
-const review_leaderboard = async function (req, res){
-  connection.query(`
-    SELECT 
-      u.UserID,
-      u.Name AS Reviewer_Name,
-      u.Email,
-      COUNT(*) AS Total_Reviews,
-      RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
-    FROM reviews r
-    JOIN users u ON r.UserID = u.UserID
-    GROUP BY u.UserID, u.Name, u.Email
-    ORDER BY Total_Reviews DESC;
-  `, (err, data) => {
-    if (err) {
-      console.log(err);
-      res.json({});
-    } else {
-      res.json(data.rows);   
-    }
-  });
-}
+const review_leaderboard = async function (req, res) {
+  const page = req.query.page;
+  const pageSize = req.query.page_size ?? 10;
+
+  if (!page) {
+    connection.query(`
+      SELECT 
+        u.UserID,
+        u.Name AS Reviewer_Name,
+        u.Email,
+        COUNT(*) AS Total_Reviews,
+        RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
+      FROM reviews r
+      JOIN users u ON r.UserID = u.UserID
+      GROUP BY u.UserID, u.Name, u.Email
+      ORDER BY Total_Reviews DESC
+    `, (err, data) => {
+      if (err || !data) {
+        console.log("Error or no data");
+        return res.status(500).json({ error: "Database error or no data" });
+      } else {
+        return res.json(data.rows);
+      }
+    });
+  } else {
+    const start = (page - 1) * pageSize;
+
+    connection.query(`
+      SELECT * FROM (
+        SELECT 
+          u.UserID,
+          u.Name AS Reviewer_Name,
+          u.Email,
+          COUNT(*) AS Total_Reviews,
+          RANK() OVER (ORDER BY COUNT(*) DESC) AS Review_Rank
+        FROM reviews r
+        JOIN users u ON r.UserID = u.UserID
+        GROUP BY u.UserID, u.Name, u.Email
+      ) AS ranked_reviewers
+      ORDER BY Total_Reviews DESC
+      LIMIT ${pageSize} OFFSET ${start}
+    `, (err, data) => {
+      if (err || !data) {
+        console.log("Error or no data");
+        return res.status(500).json({ error: "Database error or no data" });
+      } else {
+        return res.json(data.rows);
+      }
+    });
+  }
+};
+
 
 const book_reviews = async function (req, res){
-  const book_title = req.params.book_title
-
-  connection.query(`
-    SELECT 
+  const book_id = req.params.book_id
+  const new_query = `WITH selected_book AS (SELECT * FROM books
+                                  WHERE book_id='${book_id}')
+SELECT
       r.ReviewID,
       r.ReviewText,
       r.ReviewDate,
       u.UserID,
       u.Name AS Reviewer_Name,
       u.Email,
-      rt.ReviewScore
-    FROM reviews r
+      rt.ReviewScore,
+      selected_book.title
+    FROM selected_book JOIN reviews r ON selected_book.title=r.booktitle
     JOIN users u ON r.UserID = u.UserID
-    LEFT JOIN ratings rt 
+    LEFT JOIN ratings rt
       ON rt.BookTitle = r.BookTitle AND rt.UserID = r.UserID
-    WHERE r.BookTitle = '${book_title}'
-    ORDER BY r.ReviewDate DESC;
-    `, (err, data) => {
+    ORDER BY r.ReviewDate DESC;`
+
+    // const oldQuery = `
+    // SELECT 
+    //   r.ReviewID,
+    //   r.ReviewText,
+    //   r.ReviewDate,
+    //   u.UserID,
+    //   u.Name AS Reviewer_Name,
+    //   u.Email,
+    //   rt.ReviewScore
+    // FROM reviews r
+    // JOIN users u ON r.UserID = u.UserID
+    // LEFT JOIN ratings rt 
+    //   ON rt.BookTitle = r.BookTitle AND rt.UserID = r.UserID
+    // WHERE r.BookTitle = '${book_title}'
+    // ORDER BY r.ReviewDate DESC;
+    // `
+  connection.query(new_query, (err, data) => {
 
       if (err) {
         console.log(err)
@@ -293,11 +440,11 @@ const book_reviews = async function (req, res){
 }
 
 const book = async function (req, res){
-  const bookTitle = req.params.book_title
+  const book_id = req.params.book_id
 
   connection.query(`SELECT *
-                    FROM books
-                    WHERE title='${bookTitle}'`, (err, data) => {
+                    FROM books JOIN written_by w ON w.book_title=books.title JOIN authors a ON a.author_id=w.author_id
+                    WHERE book_id='${book_id}'`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})
@@ -602,6 +749,7 @@ const search_songs = async function(req, res) {
 
 module.exports = {
   top_books,
+  top_authors,
   book,
   search_books,
   search_authors,

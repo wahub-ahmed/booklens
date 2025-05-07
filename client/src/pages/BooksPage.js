@@ -6,7 +6,7 @@ import SongCard from '../components/SongCard';
 import { formatDuration } from '../helpers/formatter';
 const config = require('../config.json');
 
-export default function SongsPage() {
+export default function BooksPage() {
   const [pageSize, setPageSize] = useState(10);
   const [data, setData] = useState([]);
   const [selectedSongId, setSelectedSongId] = useState(null);
@@ -74,7 +74,7 @@ export default function SongsPage() {
   return (
     <Container>
       {selectedSongId && <SongCard songId={selectedSongId} handleClose={() => setSelectedSongId(null)} />}
-      <h2>Search Songs</h2>
+      <h2>Search Books</h2>
       <Grid container spacing={6}>
         <Grid item xs={8}>
           <TextField label='Title' value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: "100%" }}/>
