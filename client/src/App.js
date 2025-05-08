@@ -19,8 +19,12 @@ import AuthorPage from './pages/AuthorPage';
 // in this case, we only change the color scheme
 export const theme = createTheme({
   palette: {
-    primary: indigo,
-    secondary: amber,
+    primary: {
+      main: '#8B4513'
+    },
+    secondary: {
+      main: '#FFBF00'
+    },
   },
 });
 
