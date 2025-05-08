@@ -3,11 +3,12 @@ import { Outlet } from "react-router-dom"
 import { Container } from "@mui/material"
 import NavBar from "./components/NavBar"
 import HomePage from "./pages/HomePage"
-import LoginPage from "./pages/LoginPage"
 
 
 
 
+// The WholeApp is what is meant to be the rest of the app besdies the StartPage/Login area
+// Although we ran out of time to actually complete the auth
 const WholeApp = () => {
     return (
         <Container>

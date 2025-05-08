@@ -52,10 +52,6 @@ const config = require('../config.json');
     return (
       <Container>
         <h2>Top Reviewers Leaderboard</h2>
-        {/* <LazyTable
-          route={`http://${config.server_host}:${config.server_port}/review_leaderboard`}
-          columns={reviewerColumns}
-        /> */}
 
           <Grid container spacing={2}>
             {users.map((user) => (
