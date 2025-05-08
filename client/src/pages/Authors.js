@@ -14,6 +14,22 @@ function Authors() {
   const [minRating, setMinRating] = useState(0);
   const [maxRating, setMaxRating] = useState(5);
 
+  useEffect(() => {
+    const fetchAllAuthors = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('http://localhost:8080/authors');
+        const data = await res.json();
+        setAuthors(data);
+      } catch (err) {
+        console.error('Error fetching all authors:', err);
+      }
+      setLoading(false);
+    };
+  
+    fetchAllAuthors();
+  }, []);
+
   const fetchAuthors = async () => {
     setLoading(true);
     try {

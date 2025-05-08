@@ -60,7 +60,7 @@ const top_books = async function(req, res){
   const pageSize = page ? page : 10;
   
   if (!page) {
-    connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+    connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, ROUND(AVG(r.ReviewScore),2) AS AvgReviewScore
     FROM
         books b
     JOIN
@@ -88,7 +88,7 @@ const top_books = async function(req, res){
     const page_size = req.query.page_size ?? 10;
     const start = (page - 1) * page_size;
     
-     connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
+     connection.query(`SELECT b.book_id, b.Title, b.Description, b.image, b.previewLink, b.publisher, b.publishedDate, b.infoLink,b.categories, b.ratingsCount, ROUND(AVG(r.ReviewScore),2) AS AvgReviewScore
      FROM
          books b
      JOIN
@@ -120,7 +120,7 @@ const top_authors = async function(req, res){
         SELECT
             wb.Author_ID,
             a.Author_Name,
-            AVG(r.ReviewScore) AS avg_score,
+            ROUND(AVG(r.ReviewScore), 2) AS avg_score,
             COUNT(DISTINCT wb.Book_Title) AS book_count,
             COUNT(r.ReviewScore) AS total_ratings
         FROM
@@ -165,7 +165,7 @@ const top_authors = async function(req, res){
         SELECT
             wb.Author_ID,
             a.Author_Name,
-            AVG(r.ReviewScore) AS avg_score,
+            ROUND(AVG(r.ReviewScore), 2) AS avg_score,
             COUNT(DISTINCT wb.Book_Title) AS book_count,
             COUNT(r.ReviewScore) AS total_ratings
         FROM
@@ -323,9 +323,33 @@ const search_authors = async function (req, res){
   
 
 const authors = async function (req, res){
-  connection.query(`SELECT *
-                    FROM authors
-                    ORDER BY author_name`, (err, data) => {
+  connection.query(`SELECT 
+  a.Author_ID,
+  a.Author_Name,
+  COALESCE(b.book_count, 0) AS book_count,
+  COALESCE(rv.review_count, 0) AS review_count,
+  COALESCE(rt.avg_rating, 0) AS avg_rating
+FROM authors a
+LEFT JOIN (
+  SELECT Author_ID, COUNT(DISTINCT Book_Title) AS book_count
+  FROM written_by
+  GROUP BY Author_ID
+) b ON a.Author_ID = b.Author_ID
+LEFT JOIN (
+  SELECT wb.Author_ID, COUNT(*) AS review_count
+  FROM written_by wb
+  JOIN reviews r ON wb.Book_Title = r.BookTitle
+  GROUP BY wb.Author_ID
+) rv ON a.Author_ID = rv.Author_ID
+LEFT JOIN (
+  SELECT wb.Author_ID, ROUND(AVG(rt.ReviewScore), 2) AS avg_rating
+  FROM written_by wb
+  JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+  GROUP BY wb.Author_ID
+) rt ON a.Author_ID = rt.Author_ID
+ORDER BY a.Author_Name
+LIMIT 2000;
+`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})
