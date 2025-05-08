@@ -71,7 +71,7 @@ const top_books = async function(req, res){
     ORDER BY
         AvgReviewScore DESC,
         ratingsCount DESC
-    LIMIT 1000
+    LIMIT 12
         `, (err, data) => {
       if (!data) {
         console.log("No data here")
@@ -375,6 +375,7 @@ const review_leaderboard = async function (req, res) {
       JOIN users u ON r.UserID = u.UserID
       GROUP BY u.UserID, u.Name, u.Email
       ORDER BY Total_Reviews DESC
+      LIMIT 1000
     `, (err, data) => {
       if (err || !data) {
         console.log("Error or no data");

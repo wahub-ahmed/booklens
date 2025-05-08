@@ -42,56 +42,56 @@ function Authors() {
 
       {/* Search Filters */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-  <Grid item xs={12} sm={6} md={4}>
-    <TextField
-      label="Author Name"
-      variant="outlined"
-      fullWidth
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-    />
-  </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <TextField
+            label="Author Name"
+            variant="outlined"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Grid>
 
-  <Grid item xs={12} sm={6} md={4}>
-    <Typography gutterBottom>Books Published</Typography>
-    <Box sx={{ px: 1 }}>
-      <Slider
-        value={[minBooks, maxBooks]}
-        onChange={(e, newVal) => {
-          setMinBooks(newVal[0]);
-          setMaxBooks(newVal[1]);
-        }}
-        valueLabelDisplay="auto"
-        min={0}
-        max={100}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
-        <Typography variant="caption">Min: {minBooks}</Typography>
-        <Typography variant="caption">Max: {maxBooks}</Typography>
-      </Box>
-    </Box>
-  </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Typography gutterBottom>Books Published</Typography>
+          <Box sx={{ px: 1 }}>
+            <Slider
+              value={[minBooks, maxBooks]}
+              onChange={(e, newVal) => {
+                setMinBooks(newVal[0]);
+                setMaxBooks(newVal[1]);
+              }}
+              valueLabelDisplay="auto"
+              min={0}
+              max={100}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
+              <Typography variant="caption">Min: {minBooks}</Typography>
+              <Typography variant="caption">Max: {maxBooks}</Typography>
+            </Box>
+          </Box>
+        </Grid>
 
-  <Grid item xs={12} sm={6} md={4}>
-    <Typography gutterBottom>Average Rating</Typography>
-    <Box sx={{ px: 1 }}>
-      <Slider
-        value={[minRating, maxRating]}
-        step={0.1}
-        onChange={(e, newVal) => {
-          setMinRating(newVal[0]);
-          setMaxRating(newVal[1]);
-        }}
-        valueLabelDisplay="auto"
-        min={0}
-        max={5}
-      />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
-        <Typography variant="caption">Min: {minRating}</Typography>
-        <Typography variant="caption">Max: {maxRating}</Typography>
-      </Box>
-    </Box>
-  </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Typography gutterBottom>Average Rating</Typography>
+          <Box sx={{ px: 1 }}>
+            <Slider
+              value={[minRating, maxRating]}
+              step={0.1}
+              onChange={(e, newVal) => {
+                setMinRating(newVal[0]);
+                setMaxRating(newVal[1]);
+              }}
+              valueLabelDisplay="auto"
+              min={0}
+              max={5}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
+              <Typography variant="caption">Min: {minRating}</Typography>
+              <Typography variant="caption">Max: {maxRating}</Typography>
+            </Box>
+          </Box>
+        </Grid>
 
         <Grid item xs={12}>
           <Button variant="contained" onClick={fetchAuthors}>
@@ -113,8 +113,8 @@ function Authors() {
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                   <NavLink to={`/loggedin/authors/${author.author_id}`}>
-  {author.author_name}
-</NavLink>
+                    {author.author_name}
+                  </NavLink>
                   </Typography>
                   <Typography>Books: {author.book_count}</Typography>
                   <Typography>Reviews: {author.review_count}</Typography>
