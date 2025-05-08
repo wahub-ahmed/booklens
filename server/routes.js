@@ -1,11 +1,8 @@
 const { Pool, types } = require('pg');
 const config = require('./config.json')
 
-// Override the default parsing for BIGINT (PostgreSQL type ID 20)
 types.setTypeParser(20, val => parseInt(val, 10)); //DO NOT DELETE THIS
 
-// Create PostgreSQL connection using database credentials provided in config.json
-// Do not edit. If the connection fails, make sure to check that config.json is filled out correctly
 const connection = new Pool({
   host: config.rds_host,
   user: config.rds_user,
@@ -18,12 +15,8 @@ const connection = new Pool({
 });
 connection.connect((err) => err && console.log(err));
 
-/******************
- * WARM UP ROUTES *
- ******************/
 
-// New Routes for DB
-
+// User route finds user based on user id
 const user = async function(req, res) {
   const userid = req.params.user_id;
 
@@ -54,7 +47,7 @@ const user = async function(req, res) {
 };
 
 
-
+// top_books route finds top 12 rated books, ordered by average review and ratings count
 const top_books = async function(req, res){
   const page = req.query.page;
   const pageSize = page ? page : 10;
@@ -110,6 +103,7 @@ const top_books = async function(req, res){
 }
 }
 
+// finds authors ordered by total ratings, total books, and average score
 const top_authors = async function(req, res){
   const page = req.query.page;
   const pageSize = page ? page : 10;
@@ -205,7 +199,7 @@ const top_authors = async function(req, res){
 }
 
 
-
+// finds books based on name
 const search_books = async function(req, res){
   const title = req.query.title ?? '';
   const author = req.query.author ?? '';

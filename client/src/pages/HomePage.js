@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Container, Divider, Link, Typography, TextField, Grid, Card, CardContent,
-  CircularProgress, Box, Slider, Button } from '@mui/material';
+import { Container, Divider, Typography, Grid, Card, CardContent } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 
-import LazyTable from '../components/LazyTable';
-import SongCard from '../components/SongCard';
 const config = require('../config.json');
 
 export default function HomePage() {
@@ -12,6 +9,9 @@ export default function HomePage() {
   const [authors, setAuthors] = useState([]);
   const [books, setBooks] = useState([]);
   
+  /**
+   * Fetch data for top authors and top books
+   */
   useEffect(() => {
     const fetchAuthors = async () => {
       try {
@@ -36,23 +36,6 @@ export default function HomePage() {
     fetchAuthors();
     fetchBooks();
   }, []);
-
-  const bookColumns = [
-    {
-      field: 'title',
-      headerName: 'Book Title',
-      renderCell: (row) => <NavLink to={`books/${row.book_id}`}>{row.title}</NavLink> // A Link component is used just for formatting purposes
-    },
-    {
-      field: 'ratingscount',
-      headerName: '# of Ratings', // A NavLink component is used to create a link to the album page
-    },
-    {
-      field: 'avgreviewscore',
-      headerName: 'Review Score'
-    }
-  ]; 
-
 
 
   return (

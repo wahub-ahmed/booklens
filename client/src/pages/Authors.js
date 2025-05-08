@@ -14,6 +14,9 @@ function Authors() {
   const [minRating, setMinRating] = useState(0);
   const [maxRating, setMaxRating] = useState(5);
 
+  /**
+   * Load in initial author data for searches
+   */
   useEffect(() => {
     const fetchAllAuthors = async () => {
       setLoading(true);
@@ -30,6 +33,9 @@ function Authors() {
     fetchAllAuthors();
   }, []);
 
+  /**
+   * Searches for authors based on sliders and typed input; called when user presses search button
+   */
   const fetchAuthors = async () => {
     setLoading(true);
     try {
