@@ -22,7 +22,7 @@ const User = () => {
 
   return (
     <Container>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h5" gutterBottom sx={{ pt: 4 }}>
         {reviewerName ? `${reviewerName}'s Reviews` : 'User Reviews'}
       </Typography>
       <List>
