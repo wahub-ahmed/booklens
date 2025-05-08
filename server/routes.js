@@ -215,7 +215,7 @@ const search_books = async function(req, res){
   const published_before = req.query.published_before ?? '9999-12-31';
 
   const query = `
-    SELECT DISTINCT b.*, AVG(r.ReviewScore) AS AvgReviewScore
+    SELECT DISTINCT b.book_id as book_id, b.Title,b.categories,b.ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
     FROM books b
     LEFT JOIN ratings r ON b.Title = r.BookTitle
     LEFT JOIN written_by wb ON b.Title = wb.Book_Title
@@ -223,7 +223,7 @@ const search_books = async function(req, res){
     WHERE b.Title ILIKE '%' || $1 || '%'
       AND a.Author_Name ILIKE '%' || $2 || '%'
       AND (b.publishedDate >= $3 AND b.publishedDate <= $4)
-    GROUP BY b.Title
+    GROUP BY b.book_id, b.Title
     HAVING AVG(r.ReviewScore) >= $5 AND AVG(r.ReviewScore) <= $6
     ORDER BY b.Title ASC;
   `;
