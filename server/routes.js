@@ -315,7 +315,7 @@ const search_authors = async function (req, res){
       if (!rows || rows.length === 0) {
         res.status(404).json([]);
       }
-      es.json(rows);
+      res.json(rows);
     } catch (err) {
       res.status(500).json({ error: 'Internal server error' });
     }
