@@ -10,7 +10,7 @@ function Authors() {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [minBooks, setMinBooks] = useState(0);
-  const [maxBooks, setMaxBooks] = useState(100);
+  const [maxBooks, setMaxBooks] = useState(10);
   const [minRating, setMinRating] = useState(0);
   const [maxRating, setMaxRating] = useState(5);
 
@@ -85,7 +85,7 @@ function Authors() {
               }}
               valueLabelDisplay="auto"
               min={0}
-              max={100}
+              max={10}
             />
             <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
               <Typography variant="caption">Min: {minBooks}</Typography>
