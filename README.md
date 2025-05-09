@@ -11,3 +11,15 @@ To Run (temp):
 2) cd into server and run npm install
 3) cd into client and run npm install
 4) run npm start in each server and client on different terminals
+
+Dependencies Used:
+    "bcrypt": "^5.1.1",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "nodemon": "^2.0.20",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.14.1",
+    "supertest": "^6.3.3"
