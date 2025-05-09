@@ -11,3 +11,6 @@ To Run (temp):
 2) cd into server and run npm install
 3) cd into client and run npm install
 4) run npm start in each server and client on different terminals
+
+
+As a note, the file mean.py holds all of our data cleaning
