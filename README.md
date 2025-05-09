@@ -14,3 +14,14 @@ To Run (temp):
 
 
 As a note, the file mean.py holds all of our data cleaning
+Dependencies Used:
+    "bcrypt": "^5.1.1",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "nodemon": "^2.0.20",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "pg": "^8.14.1",
+    "supertest": "^6.3.3"
