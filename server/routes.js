@@ -256,6 +256,27 @@ const search_authors = async function (req, res){
         AVG(rt.ReviewScore) BETWEEN '${min_rating}' AND '${max_rating}'
       ORDER BY a.Author_Name ASC;
     `;
+
+    const newQuery = `WITH newAuthors AS (
+    SELECT *
+    FROM authors a
+    WHERE a.Author_Name ILIKE '%' || '${name}' || '%'
+)
+SELECT
+        a.Author_ID,
+        a.Author_Name,
+        COUNT(DISTINCT wb.Book_Title) AS book_count,
+        COUNT(DISTINCT rv.ReviewID) AS review_count,
+        AVG(rt.ReviewScore) AS avg_rating
+      FROM newAuthors a
+      LEFT JOIN written_by wb ON a.Author_ID = wb.Author_ID
+      LEFT JOIN reviews rv ON wb.Book_Title = rv.BookTitle
+      LEFT JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+      GROUP BY a.Author_ID, a.Author_Name
+      HAVING
+        COUNT(DISTINCT wb.Book_Title) BETWEEN '2' AND '4' AND
+        AVG(rt.ReviewScore) BETWEEN '2' AND '4.5'
+      ORDER BY a.Author_Name ASC;`
   
   
     try {
@@ -367,10 +388,7 @@ const author_average = async function (req, res){
 const review_leaderboard = async function (req, res) {
   const page = req.query.page;
   const pageSize = req.query.page_size ?? 10;
-
-  if (!page) {
-    connection.query(`
-      SELECT 
+  const oldquery = `SELECT 
         u.UserID,
         u.Name AS Reviewer_Name,
         u.Email,
@@ -380,7 +398,10 @@ const review_leaderboard = async function (req, res) {
       JOIN users u ON r.UserID = u.UserID
       GROUP BY u.UserID, u.Name, u.Email
       ORDER BY Total_Reviews DESC
-      LIMIT 99
+      LIMIT 99`
+  if (!page) {
+    connection.query(`
+      SELECT * FROM review_leaderboard;
     `, (err, data) => {
       if (err || !data) {
         console.log("Error or no data");
@@ -478,7 +499,8 @@ const book = async function (req, res){
 }
 
 const consistent_authors = async function (req, res){
-  connection.query(`
+
+  const oldQuery = `
   WITH BookAvgRatings AS (
     SELECT
     wb.Author_ID,
@@ -510,7 +532,9 @@ const consistent_authors = async function (req, res){
     JOIN authors a ON a.Author_ID = t.Author_ID
     WHERE numbooks > 1
     ORDER BY AuthorAvg DESC, numbooks DESC;
-    `, (err, data) => {
+    `
+
+  connection.query(`SELECT * FROM consistentauthors`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})
@@ -524,7 +548,7 @@ const consistent_authors = async function (req, res){
 }
 
 const worst_reviewers = async function (req, res){
-  connection.query(`
+  const oldQuery = `
     WITH BookAvgRatings AS (
         SELECT
             r.BookTitle,
@@ -558,9 +582,10 @@ const worst_reviewers = async function (req, res){
     SELECT a.UserID, ReviewerName, count, avgReviewScore
     FROM almostDone a JOIN reviewerAvgRating r ON r.UserID = a.UserID
     ORDER BY count desc
-    LIMIT 100
+    LIMIT 100`
 
-    `, (err, data) => {
+    
+  connection.query(`SELECT * FROM worstreviewers;`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})
@@ -574,7 +599,7 @@ const worst_reviewers = async function (req, res){
 }
 
 const volatile_authors = async function (req, res){
-  connection.query(`
+  const oldQuery = `
   WITH VolatileRatingsLow AS (
         SELECT
             wb.Author_ID,
@@ -614,7 +639,8 @@ const volatile_authors = async function (req, res){
     WHERE percentLow > 25 and percentHigh > 25
     ORDER BY TotalReviewCount DESC
     LIMIT 12;
-    `, (err, data) => {
+    `
+  connection.query(`SELECT * FROM volatility_ratings;`, (err, data) => {
       if (err){
         console.log(err)
         res.json({})
