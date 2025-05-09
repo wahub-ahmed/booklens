@@ -9,6 +9,7 @@ const config = require('../config.json');
 
   const UsersPage = () => {
     const [users, setUsers] = useState([]);
+    const [worst, setWorst] = useState([]);
 
     useEffect(() => {
       const fetchUsers = async () => {
@@ -20,51 +21,37 @@ const config = require('../config.json');
           console.log("Error:", error)
         }
       }
-
-      fetchUsers();
-    },[])
-    const reviewerColumns = [
-      {
-        field: 'reviewer_name',
-        headerName: 'Reviewer Name',
-        renderCell: (params) => (
-          <NavLink
-            to={`/loggedin/users/${params.userid}`}  
-            style={{ textDecoration: 'none' }}
-          >
-            {params.reviewer_name}
-          </NavLink>
-        ),
-      },
-      {
-        field: 'email',
-        headerName: 'Email',
-      },
-      {
-        field: 'total_reviews',
-        headerName: 'Total Reviews',
-      },
-      {
-        field: 'review_rank',
-        headerName: 'Rank',
+      
+      const fetchWorst = async () => {
+        try{
+          const response = await fetch(`http://${config.server_host}:${config.server_port}/worst_reviewers`);
+          const data = await response.json();
+          setWorst(data);
+        } catch(error){
+          console.log(error);
+        }
       }
-    ];
+      
+      fetchUsers();
+      fetchWorst();
+    },[])
+
+
     return (
       <Container>
         <h2>Top Reviewers Leaderboard</h2>
 
-          <Grid container spacing={2}>
-            {users.map((user) => (
+        <Grid container spacing={2}>
+            {users.slice(0,18).map((user) => (
               <Grid item xs={12} sm={6} md={4} key={user.userid}>
                 <Card variant="outlined" sx={{ height: '100%' }}>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
-                    <NavLink to={`/loggedin/users/${user.userid}`}>
-                      {user.reviewer_name}
-                    </NavLink>
+                      <NavLink to={`/loggedin/users/${user.userid}`}>
+                        {user.reviewer_name}
+                      </NavLink>
                     </Typography>
                     <Typography>Email: {user.email}</Typography>
-                    {/* <Typography>Average Review: {Number(book.AvgReviewScore).toFixed(2)}</Typography> */}
                     <Typography>Total Reviews: {user.total_reviews}</Typography>
                     <Typography>Review Rank: {user.review_rank}</Typography>
 
@@ -74,6 +61,29 @@ const config = require('../config.json');
             ))}
           </Grid>
         <Divider />
+
+        <h2>Worst Reviewers</h2>
+
+        <Grid container spacing={2}>
+            {worst.slice(0,18).map((user) => (
+              <Grid item xs={12} sm={6} md={4} key={user.userid}>
+                <Card variant="outlined" sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      <NavLink to={`/loggedin/users/${user.userid}`}>
+                        {user.reviewername}
+                      </NavLink>
+                    </Typography>
+                    <Typography>Reviews Under a Books Average: {user.count}</Typography>
+                    <Typography>Average Review: {Number(user.avgreviewscore).toFixed(2)}</Typography>
+
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        <Divider />
+
       </Container>
     );
   };

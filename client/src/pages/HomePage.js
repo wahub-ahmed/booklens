@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Container, Divider, Typography, Grid, Card, CardContent } from '@mui/material';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useAsyncError } from 'react-router-dom';
 
 const config = require('../config.json');
 
@@ -8,6 +8,8 @@ export default function HomePage() {
 
   const [authors, setAuthors] = useState([]);
   const [books, setBooks] = useState([]);
+  const [consistent, setConsistent] = useState([]);
+  const [volatile, setVolatile] = useState([]);
   
   /**
    * Fetch data for top authors and top books
@@ -32,9 +34,33 @@ export default function HomePage() {
         console.log("Error:", error)
       }
     }
+
+    const fetchConsistent = async () => {
+      try{
+        const response = await fetch(`http://${config.server_host}:${config.server_port}/consistent_authors`);
+        const data = await response.json();
+        setConsistent(data);
+
+      }catch (error){
+        console.log("Error:", error)
+      }
+    }
+
+    const fetchVolatile = async () => {
+      try{
+        const response = await fetch(`http://${config.server_host}:${config.server_port}/volatile_authors`);
+        const data = await response.json();
+        setVolatile(data);
+
+      }catch (error){
+        console.log("Error:", error)
+      }
+    }
   
     fetchAuthors();
     fetchBooks();
+    fetchConsistent();
+    fetchVolatile();
   }, []);
 
 
@@ -80,6 +106,53 @@ export default function HomePage() {
                   <Typography>Books: {author.book_count}</Typography>
                   <Typography>Reviews: {author.total_ratings}</Typography>
                   <Typography>Avg. Rating: {Number(author.avg_score).toFixed(2)}</Typography>
+
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      <Divider />
+
+      <Divider />
+      <h2>Consistent Authors</h2>
+        <Grid container spacing={2}>
+          {consistent.slice(0,12).map((consis) => (
+            <Grid item xs={12} sm={6} md={4} key={consis.author_id}>
+              <Card variant="outlined" sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    <NavLink to={`/loggedin/authors/${consis.author_id}`}>
+                      {consis.author_name}
+                    </NavLink>
+                  </Typography>
+                  <Typography>Books: {consis.numbooks}</Typography> 
+                  <Typography>Avg. Rating: {Number(consis.round).toFixed(2)}</Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+      <Divider />
+
+      <Divider />
+      <h2>Volatile Authors</h2>
+      <p>Authors who have at least 25% of their reviews as 1 and 5</p>
+
+        <Grid container spacing={2}>
+          {volatile.slice(0,12).map((author) => (
+            <Grid item xs={12} sm={6} md={4} key={author.author_id}>
+              <Card variant="outlined" sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    <NavLink to={`/loggedin/authors/${author.author_id}`}>
+                      {author.author_name}
+                    </NavLink>
+                  </Typography>
+                  <Typography>Percent of 1 Star Reviews: {author.percentlow}</Typography> 
+                  <Typography>Percent of 5 Star Reviews: {author.percenthigh}</Typography>
+                  <Typography>Total Review Count: {author.totalreviewcount}</Typography>
 
                 </CardContent>
               </Card>

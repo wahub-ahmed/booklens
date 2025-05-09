@@ -477,6 +477,156 @@ const book = async function (req, res){
   })
 }
 
+const consistent_authors = async function (req, res){
+  connection.query(`
+  WITH BookAvgRatings AS (
+    SELECT
+    wb.Author_ID,
+    r.BookTitle,
+    AVG(r.ReviewScore) AS AvgRating
+    FROM ratings r
+    JOIN written_by wb ON r.BookTitle = wb.Book_Title
+    GROUP BY wb.Author_ID, r.BookTitle
+    ),
+  AuthorAvgRatings AS (
+    SELECT
+    Author_ID,
+    AVG(AvgRating) AS AuthorAvg,
+            COUNT(BookTitle) AS numbooks
+        FROM BookAvgRatings b1
+        WHERE NOT exists (
+            SELECT *
+            FROM BookAvgRatings
+            WHERE BookAvgRatings.Author_ID = b1.Author_ID AND BookAvgRatings.AvgRating <= 4
+        )
+        GROUP BY Author_ID
+    )
+  SELECT
+        a.Author_Name,
+        a.Author_ID,
+        ROUND(t.AuthorAvg, 3),
+        numbooks
+    FROM AuthorAvgRatings t
+    JOIN authors a ON a.Author_ID = t.Author_ID
+    WHERE numbooks > 1
+    ORDER BY AuthorAvg DESC, numbooks DESC;
+    `, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+
+  })
+}
+
+const worst_reviewers = async function (req, res){
+  connection.query(`
+    WITH BookAvgRatings AS (
+        SELECT
+            r.BookTitle,
+            AVG(r.ReviewScore) AS AvgRating
+        FROM ratings r
+        GROUP BY r.BookTitle
+    ),
+    BelowAvgRatings AS (
+        SELECT
+            r.UserID,
+            r.BookTitle,
+            r.ReviewScore,
+            b.AvgRating
+        FROM ratings r
+        JOIN BookAvgRatings b ON r.BookTitle = b.BookTitle
+        WHERE r.ReviewScore < b.AvgRating
+    ),
+    reviewerAvgRating AS (
+        SELECT r.UserID, AVG(ReviewScore) as avgReviewScore
+        FROM ratings r
+        GROUP BY r.UserID
+    ),
+    almostDone AS (SELECT
+        u.Name AS ReviewerName,
+        COUNT(*) AS count,
+        u.UserID
+    FROM BelowAvgRatings b
+    JOIN Users u ON b.UserID = u.UserID
+    GROUP BY u.UserID
+    )
+    SELECT a.UserID, ReviewerName, count, avgReviewScore
+    FROM almostDone a JOIN reviewerAvgRating r ON r.UserID = a.UserID
+    ORDER BY count desc
+    LIMIT 100
+
+    `, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+
+  })
+}
+
+const volatile_authors = async function (req, res){
+  connection.query(`
+  WITH VolatileRatingsLow AS (
+        SELECT
+            wb.Author_ID,
+            COUNT(*) AS VolatileReviewCountLow
+        FROM ratings r
+        JOIN written_by wb ON r.BookTitle = wb.Book_Title
+        WHERE r.ReviewScore = 1
+        GROUP BY wb.Author_ID
+    ), VolatileRatingsHigh AS (
+        SELECT
+            wb.Author_ID,
+            COUNT(*) AS VolatileReviewCountHigh
+        FROM ratings r
+        JOIN written_by wb ON r.BookTitle = wb.Book_Title
+        WHERE r.ReviewScore = 5
+        GROUP BY wb.Author_ID
+    ),
+    TopVolatility AS (
+        SELECT Author_Name, v.VolatileReviewCountHigh, vl.VolatileReviewCountLow, a.Author_ID
+        FROM authors a JOIN VolatileRatingsHigh v ON a.Author_ID = v.Author_ID JOIN VolatileRatingsLow vl ON a.Author_ID = vl.Author_ID
+    ),
+    TotalRatings AS (
+        SELECT
+            wb.Author_ID,
+            COUNT(*) AS TotalReviewCount
+        FROM ratings r
+        JOIN written_by wb ON r.BookTitle = wb.Book_Title
+        GROUP BY wb.Author_ID
+    ),
+    percentages AS (
+    SELECT tr.Author_ID, Author_Name, (tv.VolatileReviewCountLow * 100.0 / tr.TotalReviewCount) AS percentLow,
+                        (tv.VolatileReviewCountHigh * 100.0 / tr.TotalReviewCount) AS percentHigh, TotalReviewCount
+    FROM TopVolatility tv JOIN TotalRatings tr ON tr.Author_ID = tv.Author_ID
+    )
+    SELECT Author_ID, Author_Name, ROUND(percentLow, 3) as percentLow, ROUND(percentHigh, 3) as percentHigh, TotalReviewCount
+    FROM percentages
+    WHERE percentLow > 25 and percentHigh > 25
+    ORDER BY TotalReviewCount DESC
+    LIMIT 12;
+    `, (err, data) => {
+      if (err){
+        console.log(err)
+        res.json({})
+      } else if (!data){
+        res.json({})
+      } else {
+        res.json(data.rows)
+      }
+
+  })
+}
+
 
 module.exports = {
   top_books,
@@ -489,5 +639,8 @@ module.exports = {
   author_average,
   review_leaderboard,
   book_reviews,
-  user
+  user,
+  consistent_authors,
+  worst_reviewers,
+  volatile_authors
 }
