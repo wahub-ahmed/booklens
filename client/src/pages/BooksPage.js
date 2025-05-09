@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Card, CardContent, Button, TextField, Box, CircularProgress } from '@mui/material';
 import {NavLink} from 'react-router-dom'
-
 const config = require('../config.json');
 
+
+// Allows users to search for books
 export default function BooksPage() {
-  const [pageSize, setPageSize] = useState(10);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState('');

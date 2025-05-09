@@ -3,11 +3,15 @@ import { useEffect, useState } from 'react';
 import { Container, Typography, List, ListItem, ListItemText } from '@mui/material';
 const config = require('../config.json');
 
+// Displays information about a user given a user_id
 const User = () => {
   const { user_id } = useParams();
   const [reviews, setReviews] = useState([]);
   const [reviewerName, setReviewerName] = useState('');
 
+  /**
+   * Fetch data regarding a specific user
+   */
   useEffect(() => {
     fetch(`http://${config.server_host}:${config.server_port}/users/${user_id}`)
       .then(response => response.json())

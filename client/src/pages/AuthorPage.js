@@ -4,11 +4,15 @@ import {
   Container, Typography, Card, CardContent, Divider, Grid,
 } from '@mui/material';
 
+// This page is used to display infomraiton for a given author
 export default function AuthorPage() {
   const { author_id } = useParams();
-  const [authorData, setAuthorData] = useState([]);
+  const [authorData, setAuthorData] = useState([]); 
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Fetch data for an author given author_id
+   */
   useEffect(() => {
     fetch(`http://localhost:8080/authors/${author_id}`)
       .then(res => res.json())
@@ -22,6 +26,7 @@ export default function AuthorPage() {
       });
   }, [author_id]);
 
+  // Display loading while data is being fetched
   if (loading) return <Typography>Loading...</Typography>;
   if (!authorData.length) return <Typography>No data found.</Typography>;
 

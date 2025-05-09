@@ -6,11 +6,14 @@ import { NavLink } from 'react-router-dom';
 import LazyTable from '../components/LazyTable';
 const config = require('../config.json');
 
-
+// Displays a leaderboard of most reviews, and leaderboard of who leaves reviews under a books average
   const UsersPage = () => {
     const [users, setUsers] = useState([]);
     const [worst, setWorst] = useState([]);
 
+    /**
+     * Fetch data for top reviewers (most reviews) and worst reviewers (reviews below average)
+     */
     useEffect(() => {
       const fetchUsers = async () => {
         try{

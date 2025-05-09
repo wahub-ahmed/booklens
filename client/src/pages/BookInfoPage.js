@@ -1,15 +1,18 @@
 import { useParams, NavLink } from "react-router-dom"
 import { useEffect, useState} from "react";
 import LazyTable from "../components/LazyTable";
-
 const config = require('../config.json');
+
+//Displays information about a given book
 const BookInfoPage = () => {
     const {bookId} = useParams();
     const [bookData, setBookData] = useState({});
-    const [authorData, setAuthorData] = useState({})
 
+    /**
+     * Fetch data about a book using given bookId
+     */
     useEffect( ()=>{
-        const getData = async ()=>{
+        const getData = async () =>{
         try{
             const data = await fetch(`http://${config.server_host}:${config.server_port}/books/${bookId}`)
             const dataJson = await data.json();

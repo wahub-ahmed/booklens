@@ -13,8 +13,7 @@ import WholeApp from "./WholeApp";
 import Authors from './pages/Authors';
 import AuthorPage from './pages/AuthorPage';
 
-// createTheme enables you to customize the look and feel of your app past the default
-// in this case, we only change the color scheme
+// Custom theme
 export const theme = createTheme({
   palette: {
     primary: {
@@ -26,7 +25,7 @@ export const theme = createTheme({
   },
 });
 
-
+// defines the navigation of our app
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
