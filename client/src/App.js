@@ -4,10 +4,8 @@ import { indigo, amber } from '@mui/material/colors'
 import { createTheme } from "@mui/material/styles";
 import HomePage from "./pages/HomePage";
 import BooksPage from "./pages/BooksPage";
-import AlbumsPage from "./pages/AlbumsPage";
 import UsersPage from "./pages/UsersPage";
 import User from "./pages/User";
-import LoginPage from "./pages/LoginPage";
 import NavBar from './components/NavBar';
 import StartPage from "./pages/StartPage";
 import BookInfoPage from "./pages/BookInfoPage";
@@ -28,10 +26,7 @@ export const theme = createTheme({
   },
 });
 
-// App is the root component of our application and as children contain all our pages
-// We use React Router's BrowserRouter and Routes components to define the pages for
-// our application, with each Route component representing a page and the common
-// NavBar component allowing us to navigate between pages (with hyperlinks)
+
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -48,7 +43,6 @@ export default function App() {
             <Route path="authors" element={<Authors />} />
             <Route path="authors/:author_id" element={<AuthorPage />} />  
           </Route>
-          
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

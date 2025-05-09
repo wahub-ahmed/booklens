@@ -37,8 +37,10 @@ export default function NavBar() {
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
           <NavText href='/' text='Book🔎Lens' isMain />
+          <NavText href='/loggedin' text="Enter the Library"/>
         </Toolbar>
       </Container>
+      
     </AppBar>
   );
 }
