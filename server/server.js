@@ -35,6 +35,12 @@ app.get('/review_leaderboard', routes.review_leaderboard);
 // Complex will have to join tables
 app.get('/books/:book_id/reviews', routes.book_reviews);
 
+app.get(`/consistent_authors`, routes.consistent_authors);
+
+app.get(`/worst_reviewers`, routes.worst_reviewers);
+
+app.get(`/volatile_authors`, routes.volatile_authors);
+
 
 app.listen(config.server_port, () => {
   console.log(`Server running at http://${config.server_host}:${config.server_port}/`)
