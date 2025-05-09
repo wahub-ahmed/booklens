@@ -199,12 +199,7 @@ const top_authors = async function(req, res){
 // finds books based on name
 const search_books = async function(req, res){
   const title = req.query.title ?? '';
-  const author = req.query.author ?? '';
-  const review_low = req.query.review_low ?? 0;
-  const review_high = req.query.review_high ?? 5;
-  const published_after = req.query.published_after ?? '0000-01-01';
-  const published_before = req.query.published_before ?? '9999-12-31';
-
+ 
   const query = `
     SELECT DISTINCT b.book_id as book_id, b.Title,b.categories,COUNT(*) AS ratingsCount, AVG(r.ReviewScore) AS AvgReviewScore
     FROM books b
@@ -212,15 +207,15 @@ const search_books = async function(req, res){
     LEFT JOIN written_by wb ON b.Title = wb.Book_Title
     LEFT JOIN authors a ON wb.Author_ID = a.Author_ID
     WHERE b.Title ILIKE '%' || $1 || '%'
-      AND a.Author_Name ILIKE '%' || $2 || '%'
-      AND (b.publishedDate >= $3 AND b.publishedDate <= $4)
     GROUP BY b.book_id, b.Title
-    HAVING AVG(r.ReviewScore) >= $5 AND AVG(r.ReviewScore) <= $6
-    ORDER BY b.Title ASC;
+    ORDER BY b.Title ASC
+    LIMIT 2000;
   `;
-
-  const values = [title, author, published_after, published_before, review_low, review_high];
-
+ 
+ 
+  const values = [title];
+ 
+ 
   try {
     const { rows } = await connection.query(query, values);
     res.json(rows);
@@ -228,7 +223,9 @@ const search_books = async function(req, res){
     console.error('Error searching books:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
-}
+ }
+ 
+ 
 // finds authors based on some criteria
 const search_authors = async function (req, res){
     const name = req.query.name ?? '';
@@ -315,32 +312,24 @@ const search_authors = async function (req, res){
 // The initial query for when the authors page is loaded in
 // It grabs all the authors
 const authors = async function (req, res){
-  connection.query(`SELECT 
+  connection.query(`WITH auths AS (
+    SELECT *
+    FROM authors
+    ORDER BY Author_Name
+    LIMIT 2000
+ )
+ SELECT
   a.Author_ID,
   a.Author_Name,
-  COALESCE(b.book_count, 0) AS book_count,
-  COALESCE(rv.review_count, 0) AS review_count,
-  COALESCE(rt.avg_rating, 0) AS avg_rating
-FROM authors a
-LEFT JOIN (
-  SELECT Author_ID, COUNT(DISTINCT Book_Title) AS book_count
-  FROM written_by
-  GROUP BY Author_ID
-) b ON a.Author_ID = b.Author_ID
-LEFT JOIN (
-  SELECT wb.Author_ID, COUNT(*) AS review_count
-  FROM written_by wb
-  JOIN reviews r ON wb.Book_Title = r.BookTitle
-  GROUP BY wb.Author_ID
-) rv ON a.Author_ID = rv.Author_ID
-LEFT JOIN (
-  SELECT wb.Author_ID, ROUND(AVG(rt.ReviewScore), 2) AS avg_rating
-  FROM written_by wb
-  JOIN ratings rt ON wb.Book_Title = rt.BookTitle
-  GROUP BY wb.Author_ID
-) rt ON a.Author_ID = rt.Author_ID
-ORDER BY a.Author_Name
-LIMIT 2000;
+  COUNT(wb.Book_Title) AS book_count,
+  COUNT(r.ReviewID) AS review_count,
+  ROUND(AVG(rt.ReviewScore), 2) AS avg_rating
+ FROM auths a
+ LEFT JOIN written_by wb ON a.Author_ID = wb.Author_ID
+ LEFT JOIN reviews r ON wb.Book_Title = r.BookTitle
+ LEFT JOIN ratings rt ON wb.Book_Title = rt.BookTitle
+ GROUP BY a.Author_ID, a.Author_Name
+ ORDER BY a.Author_Name;
 `, (err, data) => {
       if (err){
         console.log(err)
@@ -391,7 +380,7 @@ const review_leaderboard = async function (req, res) {
       JOIN users u ON r.UserID = u.UserID
       GROUP BY u.UserID, u.Name, u.Email
       ORDER BY Total_Reviews DESC
-      LIMIT 1000
+      LIMIT 99
     `, (err, data) => {
       if (err || !data) {
         console.log("Error or no data");
