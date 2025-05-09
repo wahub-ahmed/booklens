@@ -15,7 +15,6 @@ app.get('/top_authors', routes.top_authors);
 
 app.get('/books/:book_id', routes.book);
 
-// Complex
 app.get('/search_books', routes.search_books);
 
 app.get('/users/:user_id', routes.user);
@@ -32,14 +31,13 @@ app.get('/authors/:author_id/average', routes.author_average);
 
 app.get('/review_leaderboard', routes.review_leaderboard);
 
-// Complex will have to join tables
 app.get('/books/:book_id/reviews', routes.book_reviews);
 
-app.get(`/consistent_authors`, routes.consistent_authors);
+app.get(`/consistent_authors`, routes.consistent_authors); // complex
 
-app.get(`/worst_reviewers`, routes.worst_reviewers);
+app.get(`/worst_reviewers`, routes.worst_reviewers); // complex
 
-app.get(`/volatile_authors`, routes.volatile_authors);
+app.get(`/volatile_authors`, routes.volatile_authors); //complex
 
 
 app.listen(config.server_port, () => {

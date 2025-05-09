@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 
+// This page is used to search for authors
 function Authors() {
   const [authors, setAuthors] = useState([]);
   const [loading, setLoading] = useState(false);

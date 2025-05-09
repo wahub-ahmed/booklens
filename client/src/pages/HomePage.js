@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Container, Divider, Typography, Grid, Card, CardContent } from '@mui/material';
-import { NavLink, useAsyncError } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const config = require('../config.json');
 
+// The landing page for users, displays several rankings of books and authors
 export default function HomePage() {
 
   const [authors, setAuthors] = useState([]);
@@ -12,7 +13,7 @@ export default function HomePage() {
   const [volatile, setVolatile] = useState([]);
   
   /**
-   * Fetch data for top authors and top books
+   * Fetch data for top authors top books, consistent authors, and volatile authors
    */
   useEffect(() => {
     const fetchAuthors = async () => {
