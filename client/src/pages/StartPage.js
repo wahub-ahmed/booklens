@@ -1,7 +1,6 @@
 import NavBarStart from "../components/NavBarStart";
 import bookImage from "../old-books-arranged-on-shelf.avif";
-import LoginPage from "./LoginPage";
-const { Container } = require("@mui/material")
+const { Container, Button } = require("@mui/material")
 
 const StartPage = () => {
     return (
@@ -10,7 +9,6 @@ const StartPage = () => {
             <NavBarStart />
             <div style={{ display: 'flex', flexDirection: 'column', marginBottom: "20px"}}>
                 <img src={bookImage} alt="books"/>
-                <LoginPage />
             </div>
         </div>
     )

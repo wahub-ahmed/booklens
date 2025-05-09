@@ -2,23 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const config = require('./config');
 const routes = require('./routes');
-const authRouter = require('./routes/auth');
 const app = express();
 app.use(cors({
   origin: '*',
 }));
-
-// app.use(session({
-//   secret: 'keyboard cat',
-//   resave: false,
-//   saveUninitialized: false,
-//   //store: new SQLiteStore({ db: 'sessions.db', dir: './var/db' })
-// }));
-
-// app.use(passport.authenticate('session'));
-app.use('/', authRouter);
-// We use express to define our various API endpoints and
-// provide their handlers that we implemented in routes.js
 
 // routes for queries on the app
 
@@ -47,25 +34,6 @@ app.get('/review_leaderboard', routes.review_leaderboard);
 
 // Complex will have to join tables
 app.get('/books/:book_id/reviews', routes.book_reviews);
-
-
-
-
-
-
-// app.get('/books', routes.books);
-// From passport.js website
-// var router = express.Router();
-
-// router.get('/login', function(req, res, next) {
-//   res.render('login');
-// // });
-
-// module.exports = router;
-
-
-
-
 
 
 app.listen(config.server_port, () => {
